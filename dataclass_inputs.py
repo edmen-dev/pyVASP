@@ -1,4 +1,4 @@
-# dataclasses to describe VASP inputs/parameters
+# dataclasses to describe VASP's parameters
 from dataclasses import dataclass, field
 
 # RWIGS_parameters
@@ -6,7 +6,16 @@ from dataclasses import dataclass, field
 class RWIGS_parameters:
     Mn: str = '1.323'
     N:  str = '0.979'
+    Ga: str = '1.058'
     Ni: str = '1.058'
+    
+# potential_files
+@dataclass(frozen=False)
+class potential_files:
+    Mn: str = 'Mn_pv'
+    N:  str = 'N'
+    Ga: str = 'Ga_d'
+    Ni: str = 'Ni_pv'
 
 # standard_INCAR_parameters
 @dataclass(frozen=False)
