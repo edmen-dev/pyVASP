@@ -1,6 +1,6 @@
 import os
-from VASP_job.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5, RWIGS_parameters, potential_files
-from VASP_job.structure import structure
+from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5
+from VASP_job.code.structure import structure
 from dataclasses import dataclass, fields
 
 class VASP_job:
@@ -29,7 +29,6 @@ class VASP_job:
         # Set working directory and files
         cwd = self.add_slash(cwd)
         self.cwd = cwd
-        self.set_files()
 
         ###############################################################################
         # Checking executable and potential paths
@@ -48,19 +47,17 @@ class VASP_job:
             
         ###############################################################################
         # Set default inputs
-        self.RWIGS_parameters               = RWIGS_parameters()
         self.standard_INCAR_parameters      = standard_INCAR_parameters()
-        self.potential_files                = potential_files()
         self.constr_INCAR_parameters        = constr_INCAR_parameters()
         self.constr_INCAR_parameters_flag5  = constr_INCAR_parameters_flag5()
         
         ###############################################################################
-        # Initialising external classes
-        self.structure = structure(self.potential_path, self.potential_files, self.POTCAR_file)
-        
-        ###############################################################################
         if self.verbose == "high":
             self.write_initialization_info()
+        
+        ###############################################################################
+        # Initialising external classes
+        self.structure = structure(self.cwd, self.potential_path, self.verbose)
 
             
         return
@@ -72,12 +69,6 @@ class VASP_job:
         if path[-1] != '/':
             path += '/'
         return path
-    
-    def set_files(self):
-        self.POTCAR_file  = self.cwd+'POTCAR'
-        self.POSCAR_file  = self.cwd+'POSCAR'
-        self.KPOINTS_file = self.cwd+'KPOINTS'
-        return
     
     def write_initialization_info(self):
         print("\nYour executable is:")
@@ -92,12 +83,6 @@ class VASP_job:
         print("\nYour INCAR parameters for constraining fields are:")
         self.write_fields(self.constr_INCAR_parameters)
         self.write_fields(self.constr_INCAR_parameters_flag5)
-            
-        print("\nYour RWIGS parameters are:")
-        self.write_fields(self.RWIGS_parameters)
-            
-        print("\nYour potentials are:")
-        self.write_fields(self.potential_files)
             
         return
     

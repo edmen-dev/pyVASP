@@ -1,21 +1,9 @@
 # dataclasses to describe VASP's parameters
 from dataclasses import dataclass, field
 
-# RWIGS_parameters
-@dataclass(frozen=False)
-class RWIGS_parameters:
-    Mn: str = '1.323'
-    N:  str = '0.979'
-    Ga: str = '1.058'
-    Ni: str = '1.058'
-    
-# potential_files
-@dataclass(frozen=False)
-class potential_files:
-    Mn: str = 'Mn_pv'
-    N:  str = 'N'
-    Ga: str = 'Ga_d'
-    Ni: str = 'Ni_pv'
+
+###############################################################################
+# INCAR-related
 
 # standard_INCAR_parameters
 @dataclass(frozen=False)
@@ -55,6 +43,25 @@ class constr_INCAR_parameters_flag5:
     E_PENALTY_MAX:    str = '3.8'
     LAMBDA_FIELD_MAX: str = '1e-3'
 
+
+###############################################################################
+# Structure-related
+
+# RWIGS_parameters
+@dataclass(frozen=False)
+class RWIGS_parameters:
+    Mn: str = '1.323'
+    N:  str = '0.979'
+    Ga: str = '1.058'
+    Ni: str = '1.058'
+    
+# potential_files
+@dataclass(frozen=False)
+class potential_files:
+    Mn: str = 'Mn_pv'
+    N:  str = 'N'
+    Ga: str = 'Ga_d'
+    Ni: str = 'Ni_pv'
 
     # # 'ISYM'    : '0',
     # 'IBRION'  : '-1'
