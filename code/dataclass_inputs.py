@@ -31,7 +31,7 @@ class standard_INCAR_parameters:
 # constr_INCAR_parameters
 @dataclass(frozen=False)
 class constr_INCAR_parameters:
-    I_CONSTRAINED: str = '2'
+    I_CONSTRAINED: str = '4'
     LAMBDA:        str = '1'
 
 # constr_INCAR_parameters_flag5

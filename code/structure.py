@@ -3,7 +3,7 @@ from dataclasses import dataclass, fields
 
 class structure:
     """
-    Class to set the crystal structure.
+    Class to set properties of the crystal structure.
     """
 
     def __init__(self,

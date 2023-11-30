@@ -3,6 +3,7 @@ from subprocess import run
 from dataclasses import dataclass, fields
 from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5, job_parameters
 from VASP_job.code.structure import structure
+from VASP_job.code.magnetism import magnetism
 
 class VASP_job:
     """
@@ -16,10 +17,12 @@ class VASP_job:
                 potential_path   = '/u/edmen/workbench/devel/VASP/potentials/potpaw_PBE',
                 job_script_name  = 'job',
                 out_file         = 'out',
+                bfields          = True,
                 verbose          = 'normal'):
     
         self.job_script_name = job_script_name
         self.out_file        = out_file
+        self.bfields         = bfields
 
         ###############################################################################
         # Check on chosen verbose
@@ -72,6 +75,8 @@ class VASP_job:
                                    self.POTCAR_file,
                                    self.POSCAR_file,
                                    self.verbose)
+
+        self.magnetism = magnetism(self.verbose)
 
         return
     
@@ -137,9 +142,30 @@ class VASP_job:
             text_file.write(string)
         return
 
+    def add_constr_INCAR_parameters(self, text_file):
+        for field in fields(self.constr_INCAR_parameters):
+            string = field.name + "="
+            string += getattr(self.constr_INCAR_parameters, field.name) 
+            string += "\n"
+            text_file.write(string)
+
+        if self.constr_INCAR_parameters.I_CONSTRAINED == '5':
+            for field in fields(self.constr_INCAR_parameters_flag5):
+                string = field.name + "="
+                string += getattr(self.constr_INCAR_parameters_flag5, field.name) 
+                string += "\n"
+                text_file.write(string)
+        return
+
     def write_INCAR(self):
         with open(self.INCAR_file, "w") as text_file:
             self.add_INCAR_parameters(text_file)
+
+            # Magnetism:
+            # HERE MAGMOMS
+            if self.bfields:
+                self.add_constr_INCAR_parameters(text_file)
+                # HERE M_CONSTR
 
             # # Creating strings for INCAR for MAGMOMS and M_CONSTR
             # MAGMOM_string = 'MAGMOM= '
