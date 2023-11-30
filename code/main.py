@@ -1,7 +1,8 @@
 import os
-from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5
-from VASP_job.code.structure import structure
+from subprocess import run
 from dataclasses import dataclass, fields
+from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5, job_parameters
+from VASP_job.code.structure import structure
 
 class VASP_job:
     """
@@ -10,12 +11,16 @@ class VASP_job:
 
     def __init__(self,
                 cwd = os.getcwd(),
-                executable_path = '/u/edmen/workbench/devel/VASP/vasp.5.4.4-flag4/bin',
-                executable_name = 'vasp_ncl',
-                potential_path  = '/u/edmen/workbench/devel/VASP/potentials/potpaw_PBE',
-                output_file_name='out',
-                verbose='normal'):
+                executable_path  = '/u/edmen/workbench/devel/VASP/vasp.5.4.4-flag4/bin',
+                executable_name  = 'vasp_ncl',
+                potential_path   = '/u/edmen/workbench/devel/VASP/potentials/potpaw_PBE',
+                job_script_name  = 'job',
+                out_file         = 'out',
+                verbose          = 'normal'):
     
+        self.job_script_name = job_script_name
+        self.out_file        = out_file
+
         ###############################################################################
         # Check on chosen verbose
         if verbose != 'low' and verbose != 'normal' and verbose != 'high':
@@ -29,6 +34,10 @@ class VASP_job:
         # Set working directory and files
         cwd = self.add_slash(cwd)
         self.cwd = cwd
+        
+        ###############################################################################
+        # Set files
+        self.set_files()
 
         ###############################################################################
         # Checking executable and potential paths
@@ -50,6 +59,7 @@ class VASP_job:
         self.standard_INCAR_parameters      = standard_INCAR_parameters()
         self.constr_INCAR_parameters        = constr_INCAR_parameters()
         self.constr_INCAR_parameters_flag5  = constr_INCAR_parameters_flag5()
+        self.job_parameters                 = job_parameters()
         
         ###############################################################################
         if self.verbose == "high":
@@ -57,9 +67,12 @@ class VASP_job:
         
         ###############################################################################
         # Initialising external classes
-        self.structure = structure(self.cwd, self.potential_path, self.verbose)
+        self.structure = structure(self.potential_path,
+                                   self.KPOINTS_file,
+                                   self.POTCAR_file,
+                                   self.POSCAR_file,
+                                   self.verbose)
 
-            
         return
     
     ###############################################################################
@@ -89,4 +102,91 @@ class VASP_job:
     def write_fields(self, dataclass_name):
         for field in fields(dataclass_name):
             print('   '+field.name, '=', getattr(dataclass_name, field.name))
+        return
+    
+    def set_files(self):
+        self.KPOINTS_file = self.cwd+'KPOINTS'
+        self.POTCAR_file  = self.cwd+'POTCAR'
+        self.POSCAR_file  = self.cwd+'POSCAR'
+        self.INCAR_file   = self.cwd+'INCAR'
+        self.job_file     = self.cwd+self.job_script_name
+        return
+
+###############################################################################
+    # main methods
+
+    ###############################################################################
+    # properties
+    @property
+    def cwd(self):
+        return self._cwd
+    @cwd.setter
+    def cwd(self, new_val):
+        new_val = self.add_slash(new_val)
+        self._cwd = new_val
+        self.set_files()
+
+    ###############################################################################
+    # functionalities
+
+    def add_INCAR_parameters(self, text_file):
+        for field in fields(self.standard_INCAR_parameters):
+            string = field.name + "="
+            string += getattr(self.standard_INCAR_parameters, field.name) 
+            string += "\n"
+            text_file.write(string)
+        return
+
+    def write_INCAR(self):
+        with open(self.INCAR_file, "w") as text_file:
+            self.add_INCAR_parameters(text_file)
+
+            # # Creating strings for INCAR for MAGMOMS and M_CONSTR
+            # MAGMOM_string = 'MAGMOM= '
+            # M_CONSTR_string = 'M_CONSTR= '
+            # B_CONSTR_string = 'B_CONSTR= '
+            # for i, orientation in enumerate(orientations):
+            #     for idir in range(3):
+            #         MAGMOM_string += ' ' + '{:.7f}'.format(orientation[idir])
+            #         M_CONSTR_string += ' ' + '{:.7f}'.format(orientation[idir])
+            #     MAGMOM_string += ' '
+            #     M_CONSTR_string += ' '
+            # # for i, B_CONSTR_value in enumerate(B_CONSTR_initial_values):
+            # #     for idir in range(3):
+            # #         B_CONSTR_string += ' ' + '{:.7f}'.format(B_CONSTR_value[idir])
+            # #     B_CONSTR_string += ' '
+
+            # text_file.write(MAGMOM_string + '\n')
+        return
+
+    def write_job(self):
+        header_str = "#!/bin/bash"
+        sbatch_str = "\n#SBATCH --"
+        with open(self.job_file, "w") as text_file:
+            text_file.write(header_str)
+            for field in fields(self.job_parameters):
+                string = sbatch_str
+                string += field.name.replace("_", "-") + "="
+                string += getattr(self.job_parameters, field.name)
+                text_file.write(string)
+            text_file.write("\n\nstart_time=$(date +%s)  # Record the start time")
+            text_file.write("\n\nsrun "+self.executable+" > "+self.out_file)
+            text_file.write("\n\nend_time=$(date +%s)  # Record the end time")
+            text_file.write("\nduration=$((end_time - start_time))  # Calculate the duration in seconds")
+            text_file.write("\n\n# Print the duration")
+            text_file.write("\necho \"Job duration: $((duration/60)) minutes\"")
+
+        return
+
+    def write_inputs_and_job(self):
+        self.write_INCAR()
+        self.structure.write_KPOINTS()
+        self.structure.write_POTCAR()
+        self.structure.write_POSCAR()
+        self.write_job()
+        return
+
+    def run_vasp(self):
+        os.chdir(self.cwd)
+        run("sbatch "+self.job_file, shell=True)
         return

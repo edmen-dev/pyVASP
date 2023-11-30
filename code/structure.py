@@ -7,26 +7,32 @@ class structure:
     """
 
     def __init__(self,
-                 cwd,
                  potential_path,
+                 KPOINTS_file,
+                 POTCAR_file,
+                 POSCAR_file,
                  verbose):
         """
-        dictionary_RWIGS and dictionary_standard_INCAR_parameters are dictionaries
+        RWIGS_parameters and potential_files are dataclasses
         containing input information for RWIGS and standard variables in INCAR, respectively.
         """
         
-        self.cwd  = cwd
-        self.potential_path  = potential_path
-        self.verbose  = verbose
-        
-        ###############################################################################
-        # Set files
-        self.set_files()
+        self.potential_path = potential_path
+        self.KPOINTS_file   = KPOINTS_file
+        self.POTCAR_file    = POTCAR_file
+        self.POSCAR_file    = POSCAR_file
+        self.verbose        = verbose
         
         ###############################################################################
         # Set default inputs
+
+        # dataclasses
         self.RWIGS_parameters = RWIGS_parameters()
         self.potential_files  = potential_files()
+
+        # properties
+        self._kpoints = "1x1x1"
+        self._elements = []
 
         ###############################################################################
         if self.verbose == "high":
@@ -35,7 +41,7 @@ class structure:
         return
 
 ###############################################################################
-    # Auxiliary definitions
+    # Auxiliary methods for init
     def write_initialization_info(self):
         print("\nYour RWIGS parameters are:")
         self.write_fields(self.RWIGS_parameters)
@@ -50,23 +56,51 @@ class structure:
             print('   '+field.name, '=', getattr(dataclass_name, field.name))
         return
     
-    def set_files(self):
-        self.POTCAR_file  = self.cwd+'POTCAR'
-        self.POSCAR_file  = self.cwd+'POSCAR'
-        self.KPOINTS_file = self.cwd+'KPOINTS'
-        return
-    
+###############################################################################
+    # main methods
+
     ###############################################################################
-    def set_elements(self, elements):
-        self.elements = elements
+    # properties
+    @property
+    def kpoints(self):
+        return self._kpoints
+    @kpoints.setter
+    def kpoints(self, new_val):
+        self._kpoints = new_val
+
+    @property
+    def elements(self):
+        return self._elements
+    @elements.setter
+    def elements(self, new_val):
+        self._elements = new_val
+
+    ###############################################################################
+    # functionalities
+
+    def prepare_structure(self):
+        return
+
+    def write_KPOINTS(self):
+        with open(self.KPOINTS_file, "w") as text_file:
+            text_file.write('KPOINTS created by VASP_job python class\n')
+            text_file.write('0\n')
+            text_file.write('Monkhorst_Pack\n')
+            text_file.write(self._kpoints + '\n')
+            text_file.write('0 0 0\n')
         return
 
     def write_POTCAR(self):
         with open(self.POTCAR_file, 'w') as text_file:
-            for element in self.elements:
+            for element in self._elements:
                 potential = self.potential_path + getattr(self.potential_files, element) + "/POTCAR"
                 with open(potential) as f:
                     potential_text = f.readlines()
                 for i in potential_text:
                     text_file.write(i)
+        return
+
+    def write_POSCAR(self):
+        with open(self.POSCAR_file, 'w') as text_file:
+            text_file.write("TODO")
         return

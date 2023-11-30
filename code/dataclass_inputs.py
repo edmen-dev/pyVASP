@@ -66,3 +66,21 @@ class potential_files:
     # # 'ISYM'    : '0',
     # 'IBRION'  : '-1'
     # })
+
+
+###############################################################################
+# job-related
+
+# job_script_parameters
+@dataclass(frozen=False)
+class job_parameters:
+    job_name:     str = 'job'
+    partition:    str = 'p.cmfe'
+    nodes:        str = '1'
+    ntasks:       str = '40'
+    constraint:   str = '\'[swi1|swi2|swi3|swi4|swi5|swi6|swi7|swe1|swe2|swe3|swe4|swe5|swe6|swe7]\''
+    time:         str = '180'
+    mem_per_cpu:  str = '3GB'
+    output:       str = 'mpi-out.%j'
+    error:        str = 'mpi-err.%j'
+    get_user_env: str = 'L'
