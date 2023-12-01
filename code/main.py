@@ -20,9 +20,10 @@ class VASP_job:
                 bfields          = True,
                 verbose          = 'normal'):
     
-        self.job_script_name = job_script_name
-        self.out_file        = out_file
-        self.bfields         = bfields
+        self.job_script_name  = job_script_name
+        self.out_file         = out_file
+        self.bfields          = bfields
+        self.initialise_magnetic_strings()
 
         ###############################################################################
         # Check on chosen verbose
@@ -82,6 +83,11 @@ class VASP_job:
     
     ###############################################################################
     # Auxiliary definitions
+    def initialise_magnetic_strings(self):
+        self._MAGMOM_string   = 'MAGMOM= '
+        self._M_CONSTR_string = 'M_CONSTR= '
+        self._B_CONSTR_string = 'B_CONSTR= '
+        return
 
     def add_slash(self, path):
         if path[-1] != '/':
@@ -162,27 +168,27 @@ class VASP_job:
             self.add_INCAR_parameters(text_file)
 
             # Magnetism:
-            # HERE MAGMOMS
+            self.initialise_magnetic_strings()
+            for i, magmom in enumerate(self.magnetism.magmoms):
+                for idir in range(3):
+                    self._MAGMOM_string   += ' ' + '{:.7f}'.format(magmom[idir])
+                    self._M_CONSTR_string += ' ' + '{:.7f}'.format(magmom[idir])
+                self._MAGMOM_string   += ' '
+                self._M_CONSTR_string += ' '
+            # for i, B_CONSTR_value in enumerate(B_CONSTR_initial_values):
+            #     for idir in range(3):
+            #         B_CONSTR_string += ' ' + '{:.7f}'.format(B_CONSTR_value[idir])
+            #     B_CONSTR_string += ' '
+
+            text_file.write(self._MAGMOM_string + '\n')
+            if self.bfields:
+                text_file.write(self._M_CONSTR_string + '\n')
+
             if self.bfields:
                 self.add_constr_INCAR_parameters(text_file)
                 # HERE M_CONSTR
 
             # # Creating strings for INCAR for MAGMOMS and M_CONSTR
-            # MAGMOM_string = 'MAGMOM= '
-            # M_CONSTR_string = 'M_CONSTR= '
-            # B_CONSTR_string = 'B_CONSTR= '
-            # for i, orientation in enumerate(orientations):
-            #     for idir in range(3):
-            #         MAGMOM_string += ' ' + '{:.7f}'.format(orientation[idir])
-            #         M_CONSTR_string += ' ' + '{:.7f}'.format(orientation[idir])
-            #     MAGMOM_string += ' '
-            #     M_CONSTR_string += ' '
-            # # for i, B_CONSTR_value in enumerate(B_CONSTR_initial_values):
-            # #     for idir in range(3):
-            # #         B_CONSTR_string += ' ' + '{:.7f}'.format(B_CONSTR_value[idir])
-            # #     B_CONSTR_string += ' '
-
-            # text_file.write(MAGMOM_string + '\n')
         return
 
     def write_job(self):
@@ -215,4 +221,18 @@ class VASP_job:
     def run_vasp(self):
         os.chdir(self.cwd)
         run("sbatch "+self.job_file, shell=True)
+        return
+
+    def prepare_calculation(self, atoms):
+        # first sort atoms by elements
+        atoms = atoms.sort_values("elements")
+
+        # prepare structure
+        self.structure.prepare_structure(atoms)
+        # prepare magnetism
+        self.magnetism.prepare_magnetism(atoms)
+
+        # write files
+        self.write_inputs_and_job()
+
         return

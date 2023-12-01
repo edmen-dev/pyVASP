@@ -78,7 +78,10 @@ class structure:
     ###############################################################################
     # functionalities
 
-    def prepare_structure(self):
+    def prepare_structure(self, atoms):
+        self.elements  = atoms["elements"].tolist()
+        self.positions = atoms["positions"].tolist()
+        self.elements = atoms["elements"].tolist()
         return
 
     def write_KPOINTS(self):

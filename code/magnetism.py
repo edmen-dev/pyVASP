@@ -8,18 +8,18 @@ class magnetism:
 
 	def __init__(self,
 				 verbose,
-				 default_direction = np.array([0, 0, 1])):
+				 default_magmom = np.array([0, 0, 3])):
 	  
 		self.verbose = verbose
 
 		# properties (set default values)
-		self._betah = 0
-		self._mu = 3 # in muB
 		self._number_atoms = 1
-		self._number_magnetic_atoms = 1
 		self._magmoms = []
 		for i in range(self._number_atoms):
-			self._magmoms.append( default_direction * self._mu )
+			self._magmoms.append( default_magmom )
+		self._betahs = []
+		for i in range(self._number_atoms):
+			self._betahs.append( False )
 	  
 		return
 
@@ -28,20 +28,6 @@ class magnetism:
 
 	###############################################################################
 	# properties
-
-	@property
-	def betah(self):
-		return self._betah
-	@betah.setter
-	def betah(self, new_val):
-		self._betah = new_val
-
-	@property
-	def mu(self):
-		return self._mu
-	@mu.setter
-	def mu(self, new_val):
-		self._mu = new_val
 	
 	@property
 	def number_atoms(self):
@@ -51,22 +37,29 @@ class magnetism:
 		self._number_atoms = new_val
 	
 	@property
-	def number_magnetic_atoms(self):
-		return self._number_magnetic_atoms
-	@number_magnetic_atoms.setter
-	def number_magnetic_atoms(self, new_val):
-		self._number_magnetic_atoms = new_val
-	
-	@property
 	def magmoms(self):
 		return self._magmoms
 	@magmoms.setter
 	def magmoms(self, new_val):
 		self._magmoms = new_val
+	
+	@property
+	def betahs(self):
+		return self._betahs
+	@betahs.setter
+	def betahs(self, new_val):
+		self._betahs = new_val
 
 
 	###############################################################################
 	# functionalities
+
+	def prepare_magnetism(self, atoms):
+		self.number_atoms = len(atoms["elements"].tolist())
+
+		self.magmoms = atoms["magmoms"].tolist()
+		self.betahs  = atoms["betahs"].tolist()
+		return
 
 	def set_magmoms(self):
 		self._magmoms = []
