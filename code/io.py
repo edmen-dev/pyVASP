@@ -112,13 +112,13 @@ class io:
 
 	def write_inputs_and_job(self, executable, potential_path,
 							 lattice_vectors, positions, mode,
-							 kpoints, elements, elements_reduced,
+							 kpoints, elements, species,
 							 magmoms, B_CONSTRs):
 
-		self.write_INCAR(magmoms, B_CONSTRs)
+		self.write_INCAR(species, magmoms, B_CONSTRs)
 		self.write_KPOINTS(kpoints)
-		self.write_POTCAR(elements_reduced, potential_path)
-		self.write_POSCAR(lattice_vectors, positions, elements_reduced, mode)
+		self.write_POTCAR(species, potential_path)
+		self.write_POSCAR(lattice_vectors, positions, elements, species, mode)
 		self.write_job(executable)
 		return
 
@@ -130,6 +130,14 @@ class io:
 			string += getattr(self.standard_INCAR_parameters, field.name) 
 			string += "\n"
 			text_file.write(string)
+		return
+
+	def add_RWIGS_parameters(self, text_file, species):
+		string = "RWIGS="
+		for element in species:
+			string += getattr(self.RWIGS_parameters, element) + " "
+		string += "\n"
+		text_file.write(string)
 		return
 
 	def add_constr_INCAR_parameters(self, text_file):
@@ -147,9 +155,10 @@ class io:
 				text_file.write(string)
 		return
 
-	def write_INCAR(self, magmoms, B_CONSTRs):
+	def write_INCAR(self, species, magmoms, B_CONSTRs):
 		with open(self.INCAR_file, "w") as text_file:
 			self.add_INCAR_parameters(text_file)
+			self.add_RWIGS_parameters(text_file, species)
 
 			# Magnetism:
 			self.initialise_magnetic_strings()
@@ -192,10 +201,10 @@ class io:
 
 	###############
 	# POTCAR file
-	def write_POTCAR(self, elements_reduced, potential_path):
+	def write_POTCAR(self, species, potential_path):
 		with open(self.POTCAR_file, 'w') as text_file:
-			for element in elements_reduced:
-				potential = potential_path + getattr(self.potential_files, element[0]) + "/POTCAR"
+			for element in species:
+				potential = potential_path + getattr(self.potential_files, element) + "/POTCAR"
 				with open(potential) as f:
 					potential_text = f.readlines()
 				for i in potential_text:
@@ -204,7 +213,7 @@ class io:
 
 	###############
 	# POSCAR file
-	def write_POSCAR(self, lattice_vectors, positions, elements_reduced, mode="Cartesian"):
+	def write_POSCAR(self, lattice_vectors, positions, elements, species, mode="Cartesian"):
 		with open(self.POSCAR_file, 'w') as text_file:
 			text_file.write("Poscar file generated with python code VASP_job")
 			text_file.write("\n1.0")
@@ -213,11 +222,11 @@ class io:
 				text_file.write('{:.7f}'.format(lattice_vector[0]) + " ")
 				text_file.write('{:.7f}'.format(lattice_vector[1]) + " ")
 				text_file.write('{:.7f}'.format(lattice_vector[2]) + "\n")
-			for element in elements_reduced:
-				text_file.write(element[0] + " ")
+			for element in species:
+				text_file.write(element + " ")
 			text_file.write("\n")
-			for element in elements_reduced:
-				text_file.write( str( element[1] ) + " " )
+			for element in species:
+				text_file.write( str( elements.count(element) ) + " " )
 			text_file.write("\n"+mode)
 			text_file.write("\n")
 			for position in positions:
