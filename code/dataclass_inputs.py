@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 # standard_INCAR_parameters
 @dataclass(frozen=False)
 class standard_INCAR_parameters:
-    SYSTEM:        str = 'my material #jobname'
+    SYSTEM:        str = 'job'
     PREC:          str = 'Accurate'
     ALGO:          str = 'Fast'
     NPAR:          str = '8'

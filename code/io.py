@@ -1,3 +1,4 @@
+import pandas as pd
 from dataclasses import dataclass, fields
 from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5, job_parameters, RWIGS_parameters, potential_files
 
@@ -106,6 +107,45 @@ class io:
 		new_val = self.add_slash(new_val)
 		self._cwd = new_val
 		self.set_files()
+
+	@property
+	def structure(self):
+		return self._structure
+	@structure.setter
+	def structure(self, new_val):
+		self._structure = new_val
+
+	@property
+	def magnetic_info(self):
+		return self._magnetic_info
+	@magnetic_info.setter
+	def magnetic_info(self, new_val):
+		self._magnetic_info = new_val
+
+	@property
+	def df(self):
+		return self._df
+	@df.setter
+	def df(self, val):
+		try:
+			structure, magnetic_info = val
+		except ValueError:
+			raise ValueError("Pass an iterable with two items")
+		else:
+			""" This will run only if no exception was raised """
+			self._df = pd.DataFrame({
+			"elements"  : structure.get_chemical_symbols(),
+			"positions" : list( structure.positions ),
+			"magmoms"   : magnetic_info[0],
+			"betahs"    : magnetic_info[1],
+			"B_CONSTRs" : magnetic_info[2]
+			})
+
+		self.structure = structure
+		self.magnetic_info = magnetic_info
+
+		return
+		
 
 	###############################################################################
 	# functionalities

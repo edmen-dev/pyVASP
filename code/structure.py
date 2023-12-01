@@ -13,7 +13,6 @@ class structure:
         # properties
         self._kpoints = "1x1x1"
         self._elements = []
-        self._elements_reduced = []
 
         return
     
@@ -36,13 +35,6 @@ class structure:
     @elements.setter
     def elements(self, new_val):
         self._elements = new_val
-
-    @property
-    def elements_reduced(self):
-        return self._elements_reduced
-    @elements_reduced.setter
-    def elements_reduced(self, new_val):
-        self._elements_reduced = new_val
 
     @property
     def cell(self):
