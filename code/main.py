@@ -65,18 +65,19 @@ class VASP_job:
         run("sbatch "+self.job_file, shell=True)
         return
 
-    def prepare_calculation(self, atoms):
+    def prepare_calculation(self, lattice, atoms, mode="Cartesian"):
         # first sort atoms by elements
         atoms = atoms.sort_values("elements")
 
         # prepare structure
-        self.structure.prepare_structure(atoms)
+        self.structure.prepare_structure(lattice, atoms)
         # prepare magnetism
         self.magnetism.prepare_magnetism(atoms)
 
         # write files
         self.io.write_inputs_and_job(self.executable, self.potential_path,
-                                     self.magnetism.magmoms, self.magnetism.B_CONSTRs,
-							         self.structure.kpoints, self.structure.elements)
+                                     self.structure.lattice_vectors, self.structure.positions, mode,
+							         self.structure.kpoints, self.structure.elements, self.structure.elements_reduced,
+                                     self.magnetism.magmoms, self.magnetism.B_CONSTRs)
 
         return

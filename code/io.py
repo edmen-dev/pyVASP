@@ -110,6 +110,20 @@ class io:
 	###############################################################################
 	# functionalities
 
+	def write_inputs_and_job(self, executable, potential_path,
+							 lattice_vectors, positions, mode,
+							 kpoints, elements, elements_reduced,
+							 magmoms, B_CONSTRs):
+
+		self.write_INCAR(magmoms, B_CONSTRs)
+		self.write_KPOINTS(kpoints)
+		self.write_POTCAR(elements_reduced, potential_path)
+		self.write_POSCAR(lattice_vectors, positions, elements_reduced, mode)
+		self.write_job(executable)
+		return
+
+	###############
+	# INCAR file
 	def add_INCAR_parameters(self, text_file):
 		for field in fields(self.standard_INCAR_parameters):
 			string = field.name + "="
@@ -164,7 +178,9 @@ class io:
 			if self.bfields:
 				self.add_constr_INCAR_parameters(text_file)
 		return
-	
+
+	###############
+	# KPOINTS file
 	def write_KPOINTS(self, kpoints):
 		with open(self.KPOINTS_file, "w") as text_file:
 			text_file.write('KPOINTS created by VASP_job python class\n')
@@ -174,21 +190,45 @@ class io:
 			text_file.write('0 0 0\n')
 		return
 
-	def write_POTCAR(self, elements, potential_path):
+	###############
+	# POTCAR file
+	def write_POTCAR(self, elements_reduced, potential_path):
 		with open(self.POTCAR_file, 'w') as text_file:
-			for element in elements:
-				potential = potential_path + getattr(self.potential_files, element) + "/POTCAR"
+			for element in elements_reduced:
+				potential = potential_path + getattr(self.potential_files, element[0]) + "/POTCAR"
 				with open(potential) as f:
 					potential_text = f.readlines()
 				for i in potential_text:
 					text_file.write(i)
 		return
 
-	def write_POSCAR(self):
+	###############
+	# POSCAR file
+	def write_POSCAR(self, lattice_vectors, positions, elements_reduced, mode="Cartesian"):
 		with open(self.POSCAR_file, 'w') as text_file:
-			text_file.write("TODO")
+			text_file.write("Poscar file generated with python code VASP_job")
+			text_file.write("\n1.0")
+			text_file.write("\n")
+			for lattice_vector in lattice_vectors:
+				text_file.write('{:.7f}'.format(lattice_vector[0]) + " ")
+				text_file.write('{:.7f}'.format(lattice_vector[1]) + " ")
+				text_file.write('{:.7f}'.format(lattice_vector[2]) + "\n")
+			for element in elements_reduced:
+				text_file.write(element[0] + " ")
+			text_file.write("\n")
+			for element in elements_reduced:
+				text_file.write( str( element[1] ) + " " )
+			text_file.write("\n"+mode)
+			text_file.write("\n")
+			for position in positions:
+				text_file.write('{:.7f}'.format(position[0]) + " ")
+				text_file.write('{:.7f}'.format(position[1]) + " ")
+				text_file.write('{:.7f}'.format(position[2]) + "\n")
+			
 		return
 
+	###############
+	# job file
 	def write_job(self, executable):
 		header_str = "#!/bin/bash"
 		sbatch_str = "\n#SBATCH --"
@@ -206,15 +246,4 @@ class io:
 			text_file.write("\n\n# Print the duration")
 			text_file.write("\necho \"Job duration: $((duration/60)) minutes\"")
 
-		return
-
-	def write_inputs_and_job(self, executable, potential_path,
-							 magmoms, B_CONSTRs,
-							 kpoints, elements):
-
-		self.write_INCAR(magmoms, B_CONSTRs)
-		self.write_KPOINTS(kpoints)
-		self.write_POTCAR(elements, potential_path)
-		self.write_POSCAR()
-		self.write_job(executable)
 		return
