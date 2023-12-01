@@ -8,18 +8,20 @@ class magnetism:
 
 	def __init__(self,
 				 verbose,
-				 default_magmom = np.array([0, 0, 3])):
+				 default_magmom   = np.array([0, 0, 3]),
+				 default_B_CONSTR = np.array([0, 0, 0])):
 	  
 		self.verbose = verbose
 
 		# properties (set default values)
 		self._number_atoms = 1
-		self._magmoms = []
+		self._magmoms  = []
+		self._betahs = []
+		self._B_CONSTRs = []
 		for i in range(self._number_atoms):
 			self._magmoms.append( default_magmom )
-		self._betahs = []
-		for i in range(self._number_atoms):
 			self._betahs.append( False )
+			self._B_CONSTRs.append( default_B_CONSTR )
 	  
 		return
 
@@ -49,6 +51,13 @@ class magnetism:
 	@betahs.setter
 	def betahs(self, new_val):
 		self._betahs = new_val
+	
+	@property
+	def B_CONSTRs(self):
+		return self._B_CONSTRs
+	@B_CONSTRs.setter
+	def B_CONSTRs(self, new_val):
+		self._B_CONSTRs = new_val
 
 
 	###############################################################################
@@ -57,8 +66,9 @@ class magnetism:
 	def prepare_magnetism(self, atoms):
 		self.number_atoms = len(atoms["elements"].tolist())
 
-		self.magmoms = atoms["magmoms"].tolist()
-		self.betahs  = atoms["betahs"].tolist()
+		self.magmoms   = atoms["magmoms"].tolist()
+		self.betahs    = atoms["betahs"].tolist()
+		self.B_CONSTRs = atoms["B_CONSTRs"].tolist()
 		return
 
 	def set_magmoms(self):
