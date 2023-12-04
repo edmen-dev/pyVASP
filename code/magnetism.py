@@ -34,26 +34,71 @@ class magnetism:
 	def set_magmoms(self, magnetic_inputs, number_of_atoms):
 		magmoms = []
 		for i in range(number_of_atoms):
-			if magnetic_inputs.ms[i] is False or magnetic_inputs.ms[i] is None or magnetic_inputs.ms[i]==1.0:
-				magmoms.append( magnetic_inputs.magdirs[i] )
+			this_m = magnetic_inputs.ms[i]
+			this_betahs = magnetic_inputs.betahs[i]
+			this_magdir = magnetic_inputs.magdirs[i]
+			if this_m is False or this_m is None or this_m==1.0:
+				magmoms.append( this_magdir )
 			else:
 				random_number = np.random.random()
-				theta = self.get_theta_mag(random_number, magnetic_inputs.betahs[i])
+				theta = self.get_theta_mag(random_number, this_betahs)
 				phi   = np.random.random() * 2*np.pi
 
+				mod = np.linalg.norm( this_magdir )
 				mux = np.sin(theta) * np.cos(phi)
 				muy = np.sin(theta) * np.sin(phi)
 				muz = np.cos(theta)
-				mu = np.array( [mux, muy, muz] ) 
+				mu = mod * np.array( [mux, muy, muz] ) 
+
+				# now rotate magmom:
+				mu = self.rotate_magmom(mu, this_magdir)
+
 				magmoms.append( mu )
 		return magmoms
 
-	def get_theta_mag(self, random_number, betah, tol=1e-5):
+	def get_theta_mag(self, random_number, betah, tol=1e-4):
 		if betah > tol:
 			return np.arccos(np.log(np.exp(betah)-2*random_number*np.sinh(betah))/betah)
 		else:
 			return np.pi/2 - 1 + 2*random_number + 2*(random_number-1)*random_number*betah
 			# return np.pi/2 - 1 + 2*random_number + 2*(random_number-1)*random_number*betah + 4/3 * (random_number*(2*random_number**2 - 3*random_number + 1))*betah**2
+
+	def rotate_magmom(self, mu, magdir):
+		mod = np.linalg.norm(magdir)
+		theta = np.arccos(magdir[2]/mod)
+		phi = np.arctan2(magdir[1], magdir[0])
+
+		Rtheta = self.get_Rtheta(theta)
+		Rphi = self.get_Rphi(phi)
+
+		mu_rotated = np.dot(Rtheta, mu)
+		mu_rotated = np.dot(Rphi, mu_rotated)
+
+		return mu_rotated
+	
+	def get_Rtheta(self, angle):
+		"""
+		rotation about y-axis
+		"""
+		R = np.zeros((3,3))
+		R[0,0] = np.cos(angle)
+		R[0,2] = np.sin(angle)
+		R[2,0] = -np.sin(angle)
+		R[2,2] = np.cos(angle)
+		R[1,1] = 1
+		return R
+
+	def get_Rphi(self, angle):
+		"""
+		rotation about z-axis
+		"""
+		R = np.zeros((3,3))
+		R[0,0] = np.cos(angle)
+		R[0,1] = -np.sin(angle)
+		R[1,0] = np.sin(angle)
+		R[1,1] = np.cos(angle)
+		R[2,2] = 1
+		return R
 
 
 	###############################################################################
