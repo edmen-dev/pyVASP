@@ -50,18 +50,18 @@ class constr_INCAR_parameters_flag5:
 # RWIGS_parameters
 @dataclass(frozen=False)
 class RWIGS_parameters:
-    Mn: str = '1.323'
     N:  str = '0.979'
-    Ga: str = '1.058'
+    Mn: str = '1.323'
     Ni: str = '1.058'
+    Ga: str = '1.217'
     
 # potential_files
 @dataclass(frozen=False)
 class potential_files:
-    Mn: str = 'Mn_pv'
     N:  str = 'N'
-    Ga: str = 'Ga_d'
+    Mn: str = 'Mn_pv'
     Ni: str = 'Ni_pv'
+    Ga: str = 'Ga_d'
 
     # # 'ISYM'    : '0',
     # 'IBRION'  : '-1'
@@ -84,3 +84,21 @@ class job_parameters:
     output:       str = 'mpi-out.%j'
     error:        str = 'mpi-err.%j'
     get_user_env: str = 'L'
+
+
+###############################################################################
+# MAGNETIC INPUTS: MAGDIRS / BETAHS / BCONSTR
+
+# job_script_parameters
+@dataclass(frozen=False)
+class magnetic_inputs:
+    """
+    You should provide:
+    - magdirs (list of vectors)
+    - betahs (list of floats (use False or None to deactivate DLM mode at a specific site))
+    - B_CONSTRs (list of vectors, only for flag 5)
+    """
+    magdirs:   list[float] = field(default_factory=list)
+    ms:        bool = False
+    betahs:    bool = False
+    B_CONSTRs: bool = False

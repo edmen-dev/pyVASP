@@ -7,21 +7,8 @@ class magnetism:
 	"""
 
 	def __init__(self,
-				 verbose,
-				 default_magmom   = np.array([0, 0, 3]),
-				 default_B_CONSTR = np.array([0, 0, 0])):
-	  
+				 verbose):
 		self.verbose = verbose
-
-		# properties (set default values)
-		self._number_atoms = 1
-		self._magmoms  = []
-		self._betahs = []
-		self._B_CONSTRs = []
-		for i in range(self._number_atoms):
-			self._magmoms.append( default_magmom )
-			self._betahs.append( False )
-			self._B_CONSTRs.append( default_B_CONSTR )
 	  
 		return
 
@@ -30,71 +17,43 @@ class magnetism:
 
 	###############################################################################
 	# properties
-	
-	@property
-	def number_atoms(self):
-		return self._number_atoms
-	@number_atoms.setter
-	def number_atoms(self, new_val):
-		self._number_atoms = new_val
-	
-	@property
-	def magmoms(self):
-		return self._magmoms
-	@magmoms.setter
-	def magmoms(self, new_val):
-		self._magmoms = new_val
-	
-	@property
-	def betahs(self):
-		return self._betahs
-	@betahs.setter
-	def betahs(self, new_val):
-		self._betahs = new_val
-	
-	@property
-	def B_CONSTRs(self):
-		return self._B_CONSTRs
-	@B_CONSTRs.setter
-	def B_CONSTRs(self, new_val):
-		self._B_CONSTRs = new_val
 
 
 	###############################################################################
 	# functionalities
 
-	def prepare_magnetism(self, atoms):
-		self.number_atoms = len(atoms["elements"].tolist())
+	def set_betahs_from_ms(self, ms, number_of_atoms):
+		betahs = []
+		for i in range(number_of_atoms):
+			if ms[i] == 1 or ms[i] is False or ms[i] is None:
+				betahs.append( np.inf )
+			else:
+				betahs.append( self.get_betah_from_m( ms[i] ) )
+		return betahs
 
-		self.magmoms   = atoms["magmoms"].tolist()
-		self.betahs    = atoms["betahs"].tolist()
-		self.B_CONSTRs = atoms["B_CONSTRs"].tolist()
-		return
-
-	def set_magmoms(self):
-		self._magmoms = []
-		for i in range(self._number_atoms):
-			if i < self._number_magnetic_atoms:
+	def set_magmoms(self, magnetic_inputs, number_of_atoms):
+		magmoms = []
+		for i in range(number_of_atoms):
+			if magnetic_inputs.ms[i] is False or magnetic_inputs.ms[i] is None or magnetic_inputs.ms[i]==1.0:
+				magmoms.append( magnetic_inputs.magdirs[i] )
+			else:
 				random_number = np.random.random()
-				theta = self.get_theta_mag(random_number, self.betah)
+				theta = self.get_theta_mag(random_number, magnetic_inputs.betahs[i])
 				phi   = np.random.random() * 2*np.pi
 
-				mux = np.sin(theta) * np.cos(theta) * self._mu
-				muy = np.sin(theta) * np.sin(theta) * self._mu
-				muz = np.cos(theta) * self._mu
-				mu_dir = np.array( [mux, muy, muz] ) 
-				self._magmoms.append( mu_dir )
-			else:
-				self._magmoms.append( np.array( [0, 0, 0] ) )
-
-		return self._magmoms
+				mux = np.sin(theta) * np.cos(phi)
+				muy = np.sin(theta) * np.sin(phi)
+				muz = np.cos(theta)
+				mu = np.array( [mux, muy, muz] ) 
+				magmoms.append( mu )
+		return magmoms
 
 	def get_theta_mag(self, random_number, betah, tol=1e-5):
 		if betah > tol:
 			return np.arccos(np.log(np.exp(betah)-2*random_number*np.sinh(betah))/betah)
 		else:
-			# GET RIGHT FORMULA!
-			return np.arccos(np.log(np.exp(betah)-2*random_number*np.sinh(betah))/betah)
+			return np.pi/2 - 1 + 2*random_number + 2*(random_number-1)*random_number*betah
+			# return np.pi/2 - 1 + 2*random_number + 2*(random_number-1)*random_number*betah + 4/3 * (random_number*(2*random_number**2 - 3*random_number + 1))*betah**2
 
 
 	###############################################################################
@@ -112,7 +71,7 @@ class magnetism:
 		else:
 			return -1/betah + 1/np.tanh(betah)
 
-	def get_betah_from_order_parameter(self, order_parameter, maximum_value_of_betah = 1000, tolerance_of_order_parameter_for_inversion=1e-2):
+	def get_betah_from_m(self, order_parameter, maximum_value_of_betah = 1000, tolerance_of_order_parameter_for_inversion=1e-2):
 		def f(x, order_parameter):
 			return ( 1 + x*( order_parameter-1/np.tanh(x) ) )**2
 
@@ -129,3 +88,54 @@ class magnetism:
 			betah = res.x
 
 		return betah
+
+# Deprecated:
+
+
+				#  default_magmom   = np.array([0, 0, 3]),
+				#  default_B_CONSTR = np.array([0, 0, 0])
+
+
+		# # properties (set default values)
+		# self._number_atoms = 1
+		# self._magmoms  = []
+		# self._betahs = []
+		# self._B_CONSTRs = []
+		# for i in range(self._number_atoms):
+		# 	self._magmoms.append( default_magmom )
+		# 	self._betahs.append( False )
+		# 	self._B_CONSTRs.append( default_B_CONSTR )
+
+
+	
+	# @property
+	# def magmoms(self):
+	# 	return self._magmoms
+	# @magmoms.setter
+	# def magmoms(self, new_val):
+	# 	self._magmoms = new_val
+	
+	# @property
+	# def betahs(self):
+	# 	return self._betahs
+	# @betahs.setter
+	# def betahs(self, new_val):
+	# 	self._betahs = new_val
+	
+	# @property
+	# def B_CONSTRs(self):
+	# 	return self._B_CONSTRs
+	# @B_CONSTRs.setter
+	# def B_CONSTRs(self, new_val):
+	# 	self._B_CONSTRs = new_val
+
+
+
+
+	# def prepare_magnetism(self, atoms):
+	# 	self.number_atoms = len(atoms["elements"].tolist())
+
+	# 	self.magmoms   = atoms["magmoms"].tolist()
+	# 	self.betahs    = atoms["betahs"].tolist()
+	# 	self.B_CONSTRs = atoms["B_CONSTRs"].tolist()
+	# 	return

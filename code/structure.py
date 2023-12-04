@@ -36,25 +36,30 @@ class structure:
     def elements(self, new_val):
         self._elements = new_val
 
-    @property
-    def cell(self):
-        return self._cell
-    @cell.setter
-    def cell(self, new_val):
-        self._cell = new_val
-
     ###############################################################################
     # functionalities
 
     def prepare_structure(self, structure):
-        self.cell = structure.cell.array
 
         self.elements  = structure.get_chemical_symbols()
         self.species   = list( structure.symbols.species() )
         self.positions = structure.positions
+
+        return
+
+# Deprecated:
+
+    # @property
+    # def cell(self):
+    #     return self._cell
+    # @cell.setter
+    # def cell(self, new_val):
+    #     self._cell = new_val
+
+
+        # self.cell = structure.cell.array
+        
         # elements_reduced_buf = []
         # for element_reduced in list(dict.fromkeys(self.elements)):
         #     elements_reduced_buf.append([element_reduced, self.elements.count(element_reduced)])
         # self.elements_reduced = elements_reduced_buf.copy()
-
-        return

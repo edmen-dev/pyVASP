@@ -1,6 +1,7 @@
-import pandas as pd
 from dataclasses import dataclass, fields
-from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5, job_parameters, RWIGS_parameters, potential_files
+from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5
+from VASP_job.code.dataclass_inputs import job_parameters, RWIGS_parameters, potential_files
+from VASP_job.code.dataclass_inputs import magnetic_inputs
 
 class io:
 	"""
@@ -37,6 +38,7 @@ class io:
 		self.job_parameters                 = job_parameters()
 		self.RWIGS_parameters               = RWIGS_parameters()
 		self.potential_files                = potential_files()
+		self.magnetic_inputs                = magnetic_inputs()
 		
 		###############################################################################
 		# Set files
@@ -107,6 +109,13 @@ class io:
 		new_val = self.add_slash(new_val)
 		self._cwd = new_val
 		self.set_files()
+		
+	@property
+	def number_of_atoms(self):
+		return self._number_of_atoms
+	@number_of_atoms.setter
+	def number_of_atoms(self, new_val):
+		self._number_of_atoms = new_val
 
 	@property
 	def structure(self):
@@ -116,35 +125,18 @@ class io:
 		self._structure = new_val
 
 	@property
-	def magnetic_info(self):
-		return self._magnetic_info
-	@magnetic_info.setter
-	def magnetic_info(self, new_val):
-		self._magnetic_info = new_val
+	def magnetic_inputs(self):
+		return self._magnetic_inputs
+	@magnetic_inputs.setter
+	def magnetic_inputs(self, new_val):
+		self._magnetic_inputs = new_val
 
 	@property
-	def df(self):
-		return self._df
-	@df.setter
-	def df(self, val):
-		try:
-			structure, magnetic_info = val
-		except ValueError:
-			raise ValueError("Pass an iterable with two items")
-		else:
-			""" This will run only if no exception was raised """
-			self._df = pd.DataFrame({
-			"elements"  : structure.get_chemical_symbols(),
-			"positions" : list( structure.positions ),
-			"magmoms"   : magnetic_info[0],
-			"betahs"    : magnetic_info[1],
-			"B_CONSTRs" : magnetic_info[2]
-			})
-
-		self.structure = structure
-		self.magnetic_info = magnetic_info
-
-		return
+	def magmoms(self):
+		return self._magmoms
+	@magmoms.setter
+	def magmoms(self, new_val):
+		self._magmoms = new_val
 		
 
 	###############################################################################
