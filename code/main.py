@@ -1,3 +1,4 @@
+import numpy as np
 import os
 import pandas as pd
 from subprocess import run
@@ -135,7 +136,10 @@ class VASP_job:
       self.io.INCAR.ISYM              = ISYM
       return
 
-   def set_calculation(self, structure_ase, magnetic_inputs, mode="Cartesian"):
+   def set_calculation(self, structure_ase, magnetic_inputs, mode="Cartesian", ntasks=None):
+      # set ntasks, if given
+      if ntasks != None:
+         self.set_ntasks(ntasks)
 
       # prepare structure and magnetism
       self.df = [structure_ase, magnetic_inputs]
@@ -144,5 +148,30 @@ class VASP_job:
       species = self.structure.species
       self.io.write_inputs_and_job(self.executable, self.potential_path,
                                    self.df, self.structure, species, mode)
+
+      return
+
+   def set_ntasks(self, ntasks="40"):
+      ntasks = float(ntasks)
+      NPAR0 = round(np.sqrt(ntasks))
+      NPAR = NPAR0
+      res = ntasks % NPAR
+
+      dN_list = [-1, 1]
+      idN = 0
+      dNf = 1
+      print(NPAR)
+      while res != 0:
+         NPAR = NPAR0 + dN_list[idN]*dNf
+
+         idN += 1
+         if idN > 1:
+            idN = 0
+            dNf += 1
+
+         res = ntasks % NPAR
+
+      self.io.job_parameters.ntasks = str(int(ntasks))
+      self.io.INCAR.NPAR = str(int(NPAR))
 
       return
