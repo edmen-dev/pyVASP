@@ -5,51 +5,58 @@ from dataclasses import dataclass, field
 ###############################################################################
 # INCAR-related
 
-# standard_INCAR_parameters
+# INCAR parameters
 @dataclass(frozen=False)
-class standard_INCAR_parameters:
+class INCAR:
     SYSTEM:        str = 'job'
     PREC:          str = 'Accurate'
     ALGO:          str = 'Fast'
-    NPAR:          str = '8'
+    ISTART:        str = '0'
+    ICHARG:        str = '2'
     LREAL:         str = '.FALSE.'
     LWAVE:         str = '.FALSE.'
     LCHARG:        str = '.TRUE.'
-    LORBIT:        str = '10'
+    LORBIT:        str = '11'
     ISMEAR:        str = '1'
-    SIGMA:         str = '0.03'
-    ISTART:        str = '0'
-    ICHARG:        str = '2'
+    SIGMA:         str = '0.005'
     ISPIN:         str = '2'
     ENCUT:         str = '500'
     EDIFF:         str = '1e-6'
     NELM:          str = '200'
     LMAXMIX:       str = '6'
     LNONCOLLINEAR: str = '.TRUE.'
-    # ISYM:   str = '0'
+    NPAR:          str = '5'
+    ISYM:          str = '2'
 
-# constr_INCAR_parameters
+# INCAR_constr parameters
 @dataclass(frozen=False)
-class constr_INCAR_parameters:
+class INCAR_constr:
     I_CONSTRAINED: str = '4'
     LAMBDA:        str = '1'
 
-# constr_INCAR_parameters_flag5
+# INCAR_constr_flag5 parameters
 @dataclass(frozen=False)
-class constr_INCAR_parameters_flag5:
+class INCAR_constr_flag5:
     B_MIX:            str = '1.0'
     B_ref:            str = '0.02'
     N_MIX:            str = '4'
     E_PENALTY_MAX:    str = '3.8'
     LAMBDA_FIELD_MAX: str = '1e-3'
 
+# INCAR_relaxation parameters
+@dataclass(frozen=False)
+class INCAR_relaxation:
+    IBRION: str = '2'
+    ISIF:   str = '3'
+    NSW:    str = '100'
+    EDIFFG: str = '-0.01'
 
 ###############################################################################
 # Structure-related
 
-# RWIGS_parameters
+# RWIGS parameters
 @dataclass(frozen=False)
-class RWIGS_parameters:
+class RWIGS:
     N:  str = '0.979'
     Mn: str = '1.323'
     Ni: str = '1.058'
@@ -98,7 +105,7 @@ class magnetic_inputs:
     - betahs (list of floats (use False or None to deactivate DLM mode at a specific site))
     - B_CONSTRs (list of vectors, only for flag 5)
     """
-    magdirs:   list[float] = field(default_factory=list)
+    magdirs:   bool = False
     ms:        bool = False
     betahs:    bool = False
     B_CONSTRs: bool = False

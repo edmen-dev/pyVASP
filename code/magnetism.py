@@ -7,7 +7,14 @@ class magnetism:
 	"""
 
 	def __init__(self,
-				 verbose):
+				 default_magdir   = np.array([0, 0, 1]),
+				 default_m        = False,
+				 default_B_CONSTR = np.array([0, 0, 0]),
+				 verbose = "low"):
+
+		self.default_magdir   = default_magdir
+		self.default_m        = default_m
+		self.default_B_CONSTR = default_B_CONSTR
 		self.verbose = verbose
 	  
 		return
@@ -22,6 +29,27 @@ class magnetism:
 	###############################################################################
 	# functionalities
 
+	def set_default_magnetic_inputs(self, magnetic_inputs, number_of_atoms):
+		
+		if magnetic_inputs.magdirs is False:
+			magnetic_inputs.magdirs = []
+			for i in range(number_of_atoms):
+				magnetic_inputs.magdirs.append(self.default_magdir)
+				
+		# if not hasattr(magnetic_inputs, "ms"):
+		if magnetic_inputs.ms is False:
+			magnetic_inputs.ms = []
+			for i in range(number_of_atoms):
+				magnetic_inputs.ms.append(self.default_m)
+				
+		# if not hasattr(magnetic_inputs, "B_CONSTRs"):
+		if magnetic_inputs.B_CONSTRs is False:
+			magnetic_inputs.B_CONSTRs = []
+			for i in range(number_of_atoms):
+				magnetic_inputs.B_CONSTRs.append(self.default_B_CONSTR)
+
+		return magnetic_inputs
+
 	def set_betahs_from_ms(self, ms, number_of_atoms):
 		betahs = []
 		for i in range(number_of_atoms):
@@ -34,9 +62,10 @@ class magnetism:
 	def set_magmoms(self, magnetic_inputs, number_of_atoms):
 		magmoms = []
 		for i in range(number_of_atoms):
-			this_m = magnetic_inputs.ms[i]
+			this_m      = magnetic_inputs.ms[i]
 			this_betahs = magnetic_inputs.betahs[i]
 			this_magdir = magnetic_inputs.magdirs[i]
+
 			if this_m is False or this_m is None or this_m==1.0:
 				magmoms.append( this_magdir )
 			else:
@@ -135,10 +164,6 @@ class magnetism:
 		return betah
 
 # Deprecated:
-
-
-				#  default_magmom   = np.array([0, 0, 3]),
-				#  default_B_CONSTR = np.array([0, 0, 0])
 
 
 		# # properties (set default values)

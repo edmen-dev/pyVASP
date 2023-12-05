@@ -11,7 +11,7 @@ class structure:
         # Set default inputs
 
         # properties
-        self._kpoints = "1x1x1"
+        self._kpoints = "12 12 12"
         self._elements = []
 
         return
@@ -39,13 +39,7 @@ class structure:
     ###############################################################################
     # functionalities
 
-    def prepare_structure(self, structure):
-
-        self.elements  = structure.get_chemical_symbols()
-        self.species   = list( structure.symbols.species() )
-        self.positions = structure.positions
-
-        return
+    
 
 # Deprecated:
 
@@ -55,6 +49,14 @@ class structure:
     # @cell.setter
     # def cell(self, new_val):
     #     self._cell = new_val
+
+    # def prepare_structure(self, structure):
+
+    #     self.elements  = structure.get_chemical_symbols()
+    #     self.species   = list( structure.symbols.species() )
+    #     self.positions = structure.positions
+
+    #     return
 
 
         # self.cell = structure.cell.array

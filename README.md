@@ -14,3 +14,4 @@ Python code to set inputs of VASP (DFT) jobs and manage outputs
 - the df should have magdirs instead of magmoms?
 - Have rotations to get final magmom
 - Final magmoms should be obtained for df!
+- move kpoints and elements to io?

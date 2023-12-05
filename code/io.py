@@ -1,6 +1,6 @@
 from dataclasses import dataclass, fields
-from VASP_job.code.dataclass_inputs import standard_INCAR_parameters, constr_INCAR_parameters, constr_INCAR_parameters_flag5
-from VASP_job.code.dataclass_inputs import job_parameters, RWIGS_parameters, potential_files
+from VASP_job.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation
+from VASP_job.code.dataclass_inputs import job_parameters, RWIGS, potential_files
 from VASP_job.code.dataclass_inputs import magnetic_inputs
 
 class io:
@@ -12,17 +12,19 @@ class io:
 				 cwd,
 				 job_script_name  = 'job',
 				 out_file_name    = 'out',
-				 bfields          = True,
+				 bfields          = False,
+				 relaxation       = False,
 				 verbose          = 'normal'):
 
 		"""
-		RWIGS_parameters and potential_files are dataclasses
+		RWIGS and INCAR are dataclasses
 		containing input information for RWIGS and standard variables in INCAR, respectively.
 		"""
 
 		self.job_script_name = job_script_name
 		self.out_file_name   = out_file_name
 		self.bfields         = bfields
+		self.relaxation      = relaxation
 		self.initialise_magnetic_strings()
 			
 		###############################################################################
@@ -32,13 +34,14 @@ class io:
 			
 		###############################################################################
 		# Set default inputs
-		self.standard_INCAR_parameters      = standard_INCAR_parameters()
-		self.constr_INCAR_parameters        = constr_INCAR_parameters()
-		self.constr_INCAR_parameters_flag5  = constr_INCAR_parameters_flag5()
-		self.job_parameters                 = job_parameters()
-		self.RWIGS_parameters               = RWIGS_parameters()
-		self.potential_files                = potential_files()
-		self.magnetic_inputs                = magnetic_inputs()
+		self.INCAR               = INCAR()
+		self.INCAR_constr        = INCAR_constr()
+		self.INCAR_constr_flag5  = INCAR_constr_flag5()
+		self.INCAR_relaxation    = INCAR_relaxation()
+		self.job_parameters      = job_parameters()
+		self.RWIGS               = RWIGS()
+		self.potential_files     = potential_files()
+		self.magnetic_inputs     = magnetic_inputs()
 		
 		###############################################################################
 		# Set files
@@ -56,17 +59,24 @@ class io:
 		print("\nYour current working directory (cwd) is:")
 		print("   "+self.cwd)
 		
-		print("\nYour INCAR parameters are:")
-		self.write_fields(self.standard_INCAR_parameters)
-			
-		print("\nYour INCAR parameters for constraining fields are:")
-		self.write_fields(self.constr_INCAR_parameters)
-		self.write_fields(self.constr_INCAR_parameters_flag5)
+		print("\nYour bfields and relaxation flags are:")
+		print("   bfields="+str(self.bfields))
+		print("   relaxation="+str(self.relaxation))
 		
-		print("\nYour RWIGS parameters are:")
-		self.write_fields(self.RWIGS_parameters)
+		print("\nYour default INCAR parameters are:")
+		self.write_fields(self.INCAR)
 			
-		print("\nYour potentials are:")
+		print("\nYour default INCAR parameters for constraining fields are:")
+		self.write_fields(self.INCAR_constr)
+		self.write_fields(self.INCAR_constr_flag5)
+			
+		print("\nYour default INCAR parameters for relaxation are:")
+		self.write_fields(self.INCAR_relaxation)
+		
+		print("\nYour default RWIGS parameters are:")
+		self.write_fields(self.RWIGS)
+			
+		print("\nYour default potentials are:")
 		self.write_fields(self.potential_files)
 			
 		return
@@ -143,9 +153,15 @@ class io:
 	# functionalities
 
 	def write_inputs_and_job(self, executable, potential_path,
-							 lattice_vectors, positions, mode,
-							 kpoints, elements, species,
-							 magmoms, B_CONSTRs):
+							       df, structure, species, mode):
+
+		elements  = df["elements"].tolist()
+		positions = df["positions"].tolist()
+		magmoms   = df["magmoms"].tolist()
+		B_CONSTRs = df["B_CONSTRs"].tolist()
+		
+		kpoints         = structure.kpoints
+		lattice_vectors = structure.lattice_vectors
 
 		self.write_INCAR(species, magmoms, B_CONSTRs)
 		self.write_KPOINTS(kpoints)
@@ -157,9 +173,9 @@ class io:
 	###############
 	# INCAR file
 	def add_INCAR_parameters(self, text_file):
-		for field in fields(self.standard_INCAR_parameters):
+		for field in fields(self.INCAR):
 			string = field.name + "="
-			string += getattr(self.standard_INCAR_parameters, field.name) 
+			string += getattr(self.INCAR, field.name) 
 			string += "\n"
 			text_file.write(string)
 		return
@@ -167,22 +183,30 @@ class io:
 	def add_RWIGS_parameters(self, text_file, species):
 		string = "RWIGS="
 		for element in species:
-			string += getattr(self.RWIGS_parameters, element) + " "
+			string += getattr(self.RWIGS, element) + " "
 		string += "\n"
 		text_file.write(string)
 		return
 
-	def add_constr_INCAR_parameters(self, text_file):
-		for field in fields(self.constr_INCAR_parameters):
+	def add_relaxation_parameters(self, text_file):
+		for field in fields(self.INCAR_relaxation):
 			string = field.name + "="
-			string += getattr(self.constr_INCAR_parameters, field.name) 
+			string += getattr(self.INCAR_relaxation, field.name) 
+			string += "\n"
+			text_file.write(string)
+		return
+
+	def add_constr_INCAR_parameters(self, text_file):
+		for field in fields(self.INCAR_constr):
+			string = field.name + "="
+			string += getattr(self.INCAR_constr, field.name) 
 			string += "\n"
 			text_file.write(string)
 
-		if self.constr_INCAR_parameters.I_CONSTRAINED == '5':
-			for field in fields(self.constr_INCAR_parameters_flag5):
+		if self.INCAR_constr.I_CONSTRAINED == '5':
+			for field in fields(self.INCAR_constr_flag5):
 				string = field.name + "="
-				string += getattr(self.constr_INCAR_parameters_flag5, field.name) 
+				string += getattr(self.INCAR_constr_flag5, field.name) 
 				string += "\n"
 				text_file.write(string)
 		return
@@ -192,7 +216,14 @@ class io:
 			self.add_INCAR_parameters(text_file)
 			self.add_RWIGS_parameters(text_file, species)
 
+			# Relaxation:
+			if self.relaxation:
+				self.add_relaxation_parameters(text_file)
+
 			# Magnetism:
+			if self.bfields:
+				self.add_constr_INCAR_parameters(text_file)
+
 			self.initialise_magnetic_strings()
 
 			for i, magmom in enumerate(magmoms):
@@ -204,7 +235,7 @@ class io:
 				if self.bfields:
 					self._M_CONSTR_string += ' '
 			
-			if self.bfields == True and self.constr_INCAR_parameters.I_CONSTRAINED == '5':
+			if self.bfields == True and self.INCAR_constr.I_CONSTRAINED == '5':
 				for i, B_CONSTR in enumerate(B_CONSTRs):
 					for idir in range(3):
 						self._B_CONSTR_string += ' ' + '{:.7f}'.format(B_CONSTR[idir])
@@ -213,11 +244,8 @@ class io:
 			text_file.write(self._MAGMOM_string + '\n')
 			if self.bfields:
 				text_file.write(self._M_CONSTR_string + '\n')
-				if self.constr_INCAR_parameters.I_CONSTRAINED == "5":
+				if self.INCAR_constr.I_CONSTRAINED == "5":
 					text_file.write(self._B_CONSTR_string + '\n')
-
-			if self.bfields:
-				self.add_constr_INCAR_parameters(text_file)
 		return
 
 	###############
