@@ -136,10 +136,16 @@ class VASP_job:
       self.io.INCAR.ISYM              = ISYM
       return
 
-   def set_calculation(self, structure_ase, magnetic_inputs, mode="Cartesian", ntasks=None):
+   def set_calculation(self, structure_ase, magnetic_inputs, mode="Cartesian", ntasks=None, time=None):
       # set ntasks, if given
       if ntasks != None:
          self.set_ntasks(ntasks)
+
+      # set time, if given
+      if time != None:
+         time = float(time)
+         time = str(int(time))
+         self.io.job_parameters.time = time
 
       # prepare structure and magnetism
       self.df = [structure_ase, magnetic_inputs]
