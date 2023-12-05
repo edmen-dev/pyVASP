@@ -108,7 +108,7 @@ class VASP_job:
    # functionalities
    def run_vasp(self):
       os.chdir(self.io.cwd)
-      run("sbatch "+self.job_file, shell=True)
+      run("sbatch "+self.io.job_file, shell=True)
       return
 
    def prepare_bfields(self, I_CONSTRAINED="4", LAMBDA="1",
