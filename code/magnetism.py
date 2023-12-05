@@ -89,8 +89,7 @@ class magnetism:
       if betah > tol:
          return np.arccos(np.log(np.exp(betah)-2*random_number*np.sinh(betah))/betah)
       else:
-         return np.pi/2 - 1 + 2*random_number + 2*(random_number-1)*random_number*betah
-         # return np.pi/2 - 1 + 2*random_number + 2*(random_number-1)*random_number*betah + 4/3 * (random_number*(2*random_number**2 - 3*random_number + 1))*betah**2
+         return np.arccos(1 - 2*random_number - 2*(random_number-1)*random_number*betah)
 
    def rotate_magmom(self, mu, magdir):
       mod = np.linalg.norm(magdir)
