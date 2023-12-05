@@ -98,6 +98,8 @@ class VASP_job:
       self.io.magmoms = magmoms
 
       self.structure.lattice_vectors = structure_ase.cell.array
+      self.structure.species = list( structure_ase.symbols.indices().keys() )
+      self.structure.elements = structure_ase.get_chemical_symbols()
 
       return
 
@@ -139,25 +141,8 @@ class VASP_job:
       self.df = [structure_ase, magnetic_inputs]
 
       # write files
-      species = list( structure_ase.symbols.species() )
+      species = self.structure.species
       self.io.write_inputs_and_job(self.executable, self.potential_path,
                                    self.df, self.structure, species, mode)
 
       return
-
-
-# Deprecated:
-
-
-      # self.structure.prepare_structure(self.io.structure)
-      # self.magnetism.prepare_magnetism(self.df)
-
-      # first sort atoms by elements
-      # atoms = atoms.sort_values("elements")
-
-         # "magmoms"   : magnetic_info[0],
-         # "betahs"    : magnetic_info[1],
-         # "B_CONSTRs" : magnetic_info[2]
-
-         
-      # self.io.magnetic_info = magnetic_info

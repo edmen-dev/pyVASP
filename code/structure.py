@@ -11,8 +11,9 @@ class structure:
         # Set default inputs
 
         # properties
-        self._kpoints = "12 12 12"
-        self._elements = []
+        self._kpoints  = "12 12 12"
+        self._species  = [] # all species (without repetition)
+        self._elements = [] # all atoms
 
         return
     
@@ -30,6 +31,13 @@ class structure:
         self._kpoints = new_val
 
     @property
+    def species(self):
+        return self._species
+    @species.setter
+    def species(self, new_val):
+        self._species = new_val
+
+    @property
     def elements(self):
         return self._elements
     @elements.setter
@@ -38,30 +46,3 @@ class structure:
 
     ###############################################################################
     # functionalities
-
-    
-
-# Deprecated:
-
-    # @property
-    # def cell(self):
-    #     return self._cell
-    # @cell.setter
-    # def cell(self, new_val):
-    #     self._cell = new_val
-
-    # def prepare_structure(self, structure):
-
-    #     self.elements  = structure.get_chemical_symbols()
-    #     self.species   = list( structure.symbols.species() )
-    #     self.positions = structure.positions
-
-    #     return
-
-
-        # self.cell = structure.cell.array
-        
-        # elements_reduced_buf = []
-        # for element_reduced in list(dict.fromkeys(self.elements)):
-        #     elements_reduced_buf.append([element_reduced, self.elements.count(element_reduced)])
-        # self.elements_reduced = elements_reduced_buf.copy()

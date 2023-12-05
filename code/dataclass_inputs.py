@@ -59,6 +59,7 @@ class INCAR_relaxation:
 class RWIGS:
     N:  str = '0.979'
     Mn: str = '1.323'
+    Fe: str = '1.164'
     Ni: str = '1.058'
     Ga: str = '1.217'
     
@@ -67,12 +68,9 @@ class RWIGS:
 class potential_files:
     N:  str = 'N'
     Mn: str = 'Mn_pv'
+    Fe: str = 'Fe_pv'
     Ni: str = 'Ni_pv'
     Ga: str = 'Ga_d'
-
-    # # 'ISYM'    : '0',
-    # 'IBRION'  : '-1'
-    # })
 
 
 ###############################################################################
