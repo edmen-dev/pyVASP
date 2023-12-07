@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=job
 #SBATCH --partition=p.cmfe
-#SBATCH --nodes=2
+#SBATCH --nodes=1
 #SBATCH --ntasks=40
 #SBATCH --constraint='[swi1|swi2|swi3|swi4|swi5|swi6|swi7|swe1|swe2|swe3|swe4|swe5|swe6|swe7]'
 #SBATCH --time=180
@@ -12,7 +12,7 @@
 
 start_time=$(date +%s)  # Record the start time
 
-srun /home/emendive/workbench/work/from_claix/codes/VASP/vasp.5.4.4-flag4/bin/vasp_ncl > /home/emendive/workbench/devel/gitclones/VASP_job/notebooks/examples/bccFe_FM/AFM_kpoints10x10x10_ntasks80/out
+srun /home/emendive/workbench/work/from_claix/codes/VASP/vasp.5.4.4-flag4/bin/vasp_ncl > /home/emendive/workbench/devel/gitclones/VASP_job/notebooks/examples/bccFe_FM_supercell/FM_2x1x1/out
 
 end_time=$(date +%s)  # Record the end time
 duration=$((end_time - start_time))  # Calculate the duration in seconds

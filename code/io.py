@@ -1,7 +1,6 @@
 from dataclasses import dataclass, fields
 from VASP_job.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation
 from VASP_job.code.dataclass_inputs import job_parameters, RWIGS, potential_files
-from VASP_job.code.dataclass_inputs import magnetic_inputs
 
 class io:
    """
@@ -41,7 +40,6 @@ class io:
       self.job_parameters      = job_parameters()
       self.RWIGS               = RWIGS()
       self.potential_files     = potential_files()
-      self.magnetic_inputs     = magnetic_inputs()
       
       ###############################################################################
       # Set files
@@ -128,25 +126,11 @@ class io:
       self._number_of_atoms = new_val
 
    @property
-   def structure(self):
-      return self._structure
-   @structure.setter
-   def structure(self, new_val):
-      self._structure = new_val
-
-   @property
-   def magnetic_inputs(self):
-      return self._magnetic_inputs
-   @magnetic_inputs.setter
-   def magnetic_inputs(self, new_val):
-      self._magnetic_inputs = new_val
-
-   @property
-   def magmoms(self):
-      return self._magmoms
-   @magmoms.setter
-   def magmoms(self, new_val):
-      self._magmoms = new_val
+   def structure_ase(self):
+      return self._structure_ase
+   @structure_ase.setter
+   def structure_ase(self, new_val):
+      self._structure_ase = new_val
       
 
    ###############################################################################
