@@ -136,8 +136,7 @@ class io:
    ###############################################################################
    # functionalities
 
-   def write_inputs_and_job(self, executable, potential_path,
-                            df, structure, species, mode):
+   def write_inputs(self, potential_path, df, structure, species, mode):
 
       elements  = df["elements"].tolist()
       positions = df["positions"].tolist()
@@ -151,6 +150,9 @@ class io:
       self.write_KPOINTS(kpoints)
       self.write_POTCAR(species, potential_path)
       self.write_POSCAR(lattice_vectors, positions, elements, species, mode)
+      return
+
+   def set_job_script(self, executable):
       self.write_job(executable)
       return
 
@@ -293,7 +295,7 @@ class io:
             string += getattr(self.job_parameters, field.name)
             text_file.write(string)
          text_file.write("\n\nstart_time=$(date +%s)  # Record the start time")
-         text_file.write("\n\nsrun "+executable+" > "+self.out_file)
+         text_file.write("\n\n"+self.command+" "+executable+" > "+self.out_file)
          text_file.write("\n\nend_time=$(date +%s)  # Record the end time")
          text_file.write("\nduration=$((end_time - start_time))  # Calculate the duration in seconds")
          text_file.write("\n\n# Print the duration")

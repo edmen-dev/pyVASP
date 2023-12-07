@@ -20,6 +20,8 @@ class VASP_job:
             bfields         = False,
             relaxation      = False,
             ntasks_per_node = 40,
+            command         = "srun",
+            pyscript        = False,
             verbose         = 'normal'):
 
       ###############################################################################
@@ -40,6 +42,9 @@ class VASP_job:
       # set ntasks per node
       self.ntasks_per_node = ntasks_per_node
       self.io.job_parameters.ntasks = str(self.ntasks_per_node)
+      # set command
+      self.io.command = command
+      self.pyscript   = pyscript
 
       ###############################################################################
       # Checking executable and potential paths
@@ -91,15 +96,15 @@ class VASP_job:
 
       self._df = pd.DataFrame({
       "elements"  : structure_ase.get_chemical_symbols(),
-      "positions" : list( structure_ase.positions ),
-      "magdirs"   : list( structure_ase.arrays["magdirs"] ),
+      "positions" : [tuple(sublist) for sublist in list( structure_ase.positions )],
+      "magdirs"   : [tuple(sublist) for sublist in list( structure_ase.arrays["magdirs"] )],
       "ms"        : list( structure_ase.arrays["ms"] ),
       "betahs"    : list( structure_ase.arrays["betahs"] ),
-      "magmoms"   : list( structure_ase.arrays["magmoms"] ),
-      "B_CONSTRs" : list( structure_ase.arrays["B_CONSTRs"] )
+      "magmoms"   : [tuple(sublist) for sublist in list( structure_ase.arrays["magmoms"] )],
+      "B_CONSTRs" : [tuple(sublist) for sublist in list( structure_ase.arrays["B_CONSTRs"] )]
       })
       # sort values to satisfy vasp
-      self._df = self._df.sort_values("elements")
+      self._df = self._df.sort_values(["elements", "magdirs", "positions"])
 
       self.io.structure_ase = structure_ase
 
@@ -116,6 +121,11 @@ class VASP_job:
    ###############################################################################
    # functionalities
    def run_vasp(self):
+      os.chdir(self.io.cwd)
+      run(self.command+" "+self.executable+" > "+self.out_file, shell=True)
+      return
+   
+   def submit_job(self):      
       os.chdir(self.io.cwd)
       run("sbatch "+self.io.job_file, shell=True)
       return
@@ -160,9 +170,11 @@ class VASP_job:
       self.df = structure_ase
 
       # write files
-      species = self.structure.species
-      self.io.write_inputs_and_job(self.executable, self.potential_path,
-                                   self.df, self.structure, species, mode)
+      species = self.structure.species            
+      self.io.write_inputs(self.potential_path, self.df, self.structure, species, mode)
+      
+      if not self.pyscript:
+         self.io.write_job(self.executable)
 
       return
 
