@@ -98,12 +98,18 @@ class VASP_job:
       "magmoms"   : list( structure_ase.arrays["magmoms"] ),
       "B_CONSTRs" : list( structure_ase.arrays["B_CONSTRs"] )
       })
+      # sort values to satisfy vasp
+      self._df = self._df.sort_values("elements")
 
       self.io.structure_ase = structure_ase
 
       self.structure.lattice_vectors = structure_ase.cell.array
-      self.structure.species = list( structure_ase.symbols.indices().keys() )
-      self.structure.elements = structure_ase.get_chemical_symbols()
+      self.structure.elements = self._df["elements"]
+      species = []
+      for element in self.structure.elements:
+         if element not in species:
+            species.append(element)
+      self.structure.species = species
 
       return
 
