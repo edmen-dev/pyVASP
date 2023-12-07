@@ -91,19 +91,22 @@ class job_parameters:
     get_user_env: str = 'L'
 
 
-###############################################################################
-# MAGNETIC INPUTS: MAGDIRS / BETAHS / BCONSTR
 
-# job_script_parameters
-@dataclass(frozen=False)
-class magnetic_inputs:
-    """
-    You should provide:
-    - magdirs (list of vectors)
-    - betahs (list of floats (use False or None to deactivate DLM mode at a specific site))
-    - B_CONSTRs (list of vectors, only for flag 5)
-    """
-    magdirs:   bool = False
-    ms:        bool = False
-    betahs:    bool = False
-    B_CONSTRs: bool = False
+#deprecated
+
+# ###############################################################################
+# # MAGNETIC INPUTS: MAGDIRS / BETAHS / BCONSTR
+
+# # job_script_parameters
+# @dataclass(frozen=False)
+# class magnetic_inputs:
+#     """
+#     You should provide:
+#     - magdirs (list of vectors)
+#     - betahs (list of floats (use False or None to deactivate DLM mode at a specific site))
+#     - B_CONSTRs (list of vectors, only for flag 5)
+#     """
+#     magdirs:   bool = False
+#     ms:        bool = False
+#     betahs:    bool = False
+#     B_CONSTRs: bool = False

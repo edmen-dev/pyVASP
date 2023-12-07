@@ -7,4 +7,9 @@ Python code to set inputs of VASP (DFT) jobs and manage outputs
 - fill RWIGS and potential_list
 - Everything scales well with supercell?
 - move kpoints and elements to io?
-- automate calculation of NPAR
+- automate calculation of NPAR - change name of set_ntasks?
+- create class materials with definitions creating crystal structures
+- create class prepare material
+- work on supercells
+- create class phonons
+- create class parser (SPOSCAR, total energy, final magmoms)

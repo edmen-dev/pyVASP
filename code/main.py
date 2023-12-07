@@ -19,6 +19,7 @@ class VASP_job:
             out_file        = 'out',
             bfields         = False,
             relaxation      = False,
+            ntasks_per_node = 40,
             verbose         = 'normal'):
 
       ###############################################################################
@@ -35,6 +36,10 @@ class VASP_job:
       self.io        = io(os.getcwd(), job_script_name, out_file, bfields, relaxation, self.verbose)
       self.structure = structure(self.verbose)
       self.magnetism = magnetism(verbose = self.verbose)
+      
+      # set ntasks per node
+      self.ntasks_per_node = ntasks_per_node
+      self.io.job_parameters.ntasks = str(self.ntasks_per_node)
 
       ###############################################################################
       # Checking executable and potential paths
@@ -69,34 +74,32 @@ class VASP_job:
    def df(self):
       return self._df
    @df.setter
-   def df(self, val):
-      try:
-         structure_ase, magnetic_inputs = val
-      except ValueError:
-         raise ValueError("Pass an iterable with two items: structure_ase (from ASE) and class.io.magnetic_inputs")
-      else:
+   def df(self, structure_ase):
+      # try:
+      #    structure_ase, magnetic_inputs = val
+      # except ValueError:
+      #    raise ValueError("Pass an iterable with two items: structure_ase (from ASE) and class.io.magnetic_inputs")
+      # else:
 
-         # First get number of magnetic atoms and set default values to magnetic_inputs.ms and magnetic.inputs.B_CONSTRs if not given
-         self.io.number_of_atoms = len(structure_ase)
-         magnetic_inputs = self.magnetism.set_default_magnetic_inputs(magnetic_inputs, self.io.number_of_atoms)
+      # First get number of magnetic atoms and set default values to magnetic_inputs.ms and magnetic.inputs.B_CONSTRs if not given
+      self.io.number_of_atoms = len(structure_ase)
+      structure_ase = self.magnetism.set_default_magnetic_inputs(structure_ase, self.io.number_of_atoms)
 
-         # Get magmoms from magdirs and betahs (if betah is False, magmom = magdir at that site)
-         magnetic_inputs.betahs = self.magnetism.set_betahs_from_ms(magnetic_inputs.ms, self.io.number_of_atoms)
-         magmoms = self.magnetism.set_magmoms(magnetic_inputs, self.io.number_of_atoms)
+      # Get magmoms from magdirs and betahs (if ms is 1, magmom = magdir at that site)
+      structure_ase = self.magnetism.set_betahs_from_ms(structure_ase, self.io.number_of_atoms)
+      structure_ase = self.magnetism.set_magmoms(structure_ase, self.io.number_of_atoms)
 
-         self._df = pd.DataFrame({
-         "elements"  : structure_ase.get_chemical_symbols(),
-         "positions" : list( structure_ase.positions ),
-         "magdirs"   : magnetic_inputs.magdirs,
-         "ms"        : magnetic_inputs.ms,
-         "betahs"    : magnetic_inputs.betahs,
-         "magmoms"   : magmoms,
-         "B_CONSTRs" : magnetic_inputs.B_CONSTRs
-         })
+      self._df = pd.DataFrame({
+      "elements"  : structure_ase.get_chemical_symbols(),
+      "positions" : list( structure_ase.positions ),
+      "magdirs"   : list( structure_ase.arrays["magdirs"] ),
+      "ms"        : list( structure_ase.arrays["ms"] ),
+      "betahs"    : list( structure_ase.arrays["betahs"] ),
+      "magmoms"   : list( structure_ase.arrays["magmoms"] ),
+      "B_CONSTRs" : list( structure_ase.arrays["B_CONSTRs"] )
+      })
 
-      self.io.structure = structure_ase
-      self.io.magnetic_inputs = magnetic_inputs
-      self.io.magmoms = magmoms
+      self.io.structure_ase = structure_ase
 
       self.structure.lattice_vectors = structure_ase.cell.array
       self.structure.species = list( structure_ase.symbols.indices().keys() )
@@ -136,7 +139,7 @@ class VASP_job:
       self.io.INCAR.ISYM              = ISYM
       return
 
-   def set_calculation(self, structure_ase, magnetic_inputs, mode="Cartesian", ntasks=None, time=None):
+   def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None):
       # set ntasks, if given
       if ntasks != None:
          self.set_ntasks(ntasks)
@@ -148,7 +151,7 @@ class VASP_job:
          self.io.job_parameters.time = time
 
       # prepare structure and magnetism
-      self.df = [structure_ase, magnetic_inputs]
+      self.df = structure_ase
 
       # write files
       species = self.structure.species
@@ -166,7 +169,6 @@ class VASP_job:
       dN_list = [-1, 1]
       idN = 0
       dNf = 1
-      print(NPAR)
       while res != 0:
          NPAR = NPAR0 + dN_list[idN]*dNf
 
@@ -177,7 +179,12 @@ class VASP_job:
 
          res = ntasks % NPAR
 
-      self.io.job_parameters.ntasks = str(int(ntasks))
+      if ntasks%self.ntasks_per_node == 0:
+         nodes_job = str(int(ntasks/self.ntasks_per_node))
+      else:
+         raise ValueError("ntasks chosen is not a multiple of default ntasks per node")
+
+      self.io.job_parameters.nodes  = nodes_job
       self.io.INCAR.NPAR = str(int(NPAR))
 
       return

@@ -8,7 +8,7 @@ class magnetism:
 
    def __init__(self,
              default_magdir   = np.array([0, 0, 1]),
-             default_m        = False,
+             default_m        = 1.0, # No DLM is applied
              default_B_CONSTR = np.array([0, 0, 0]),
              verbose = "low"):
 
@@ -29,48 +29,53 @@ class magnetism:
    ###############################################################################
    # functionalities
 
-   def set_default_magnetic_inputs(self, magnetic_inputs, number_of_atoms):
+   def set_default_magnetic_inputs(self, structure_ase, number_of_atoms):
       
-      if magnetic_inputs.magdirs is False:
-         magnetic_inputs.magdirs = []
+      if not "magdirs" in structure_ase.arrays:
+         magdirs = []
          for i in range(number_of_atoms):
-            magnetic_inputs.magdirs.append(self.default_magdir)
-            
-      # if not hasattr(magnetic_inputs, "ms"):
-      if magnetic_inputs.ms is False:
-         magnetic_inputs.ms = []
+            magdirs.append(self.default_magdir)
+         structure_ase.new_array("magdirs", magdirs, dtype=float)
+      
+      if not "ms" in structure_ase.arrays:
+         ms = []
          for i in range(number_of_atoms):
-            magnetic_inputs.ms.append(self.default_m)
-            
-      # if not hasattr(magnetic_inputs, "B_CONSTRs"):
-      if magnetic_inputs.B_CONSTRs is False:
-         magnetic_inputs.B_CONSTRs = []
+            ms.append(self.default_m)
+         structure_ase.new_array("ms", ms, dtype=float)
+      
+      if not "B_CONSTRs" in structure_ase.arrays:
+         B_CONSTRs = []
          for i in range(number_of_atoms):
-            magnetic_inputs.B_CONSTRs.append(self.default_B_CONSTR)
+            B_CONSTRs.append(self.default_B_CONSTR)
+         structure_ase.new_array("B_CONSTRs", B_CONSTRs, dtype=float)
 
-      return magnetic_inputs
+      return structure_ase
 
-   def set_betahs_from_ms(self, ms, number_of_atoms):
+   def set_betahs_from_ms(self, structure_ase, number_of_atoms):
       betahs = []
+      ms = structure_ase.arrays["ms"]
       for i in range(number_of_atoms):
          if ms[i] == 1 or ms[i] is False or ms[i] is None:
             betahs.append( np.inf )
          else:
             betahs.append( self.get_betah_from_m( ms[i] ) )
-      return betahs
 
-   def set_magmoms(self, magnetic_inputs, number_of_atoms):
+      structure_ase.new_array("betahs", betahs, dtype=float)
+      
+      return structure_ase
+
+   def set_magmoms(self, structure_ase, number_of_atoms):
       magmoms = []
       for i in range(number_of_atoms):
-         this_m      = magnetic_inputs.ms[i]
-         this_betahs = magnetic_inputs.betahs[i]
-         this_magdir = magnetic_inputs.magdirs[i]
+         this_m      = structure_ase.arrays["ms"][i]
+         this_betah  = structure_ase.arrays["betahs"][i]
+         this_magdir = structure_ase.arrays["magdirs"][i]
 
-         if this_m is False or this_m is None or this_m==1.0:
+         if this_m is False or this_m is None or this_m==1:
             magmoms.append( this_magdir )
          else:
             random_number = np.random.random()
-            theta = self.get_theta_mag(random_number, this_betahs)
+            theta = self.get_theta_mag(random_number, this_betah)
             phi   = np.random.random() * 2*np.pi
 
             mod = np.linalg.norm( this_magdir )
@@ -83,7 +88,10 @@ class magnetism:
             mu = self.rotate_magmom(mu, this_magdir)
 
             magmoms.append( mu )
-      return magmoms
+
+      structure_ase.new_array("magmoms", magmoms, dtype=float)
+
+      return structure_ase
 
    def get_theta_mag(self, random_number, betah, tol=1e-4):
       if betah > tol:
