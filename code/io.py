@@ -136,7 +136,7 @@ class io:
    ###############################################################################
    # functionalities
 
-   def write_inputs(self, potential_path, df, structure, species, mode):
+   def write_inputs(self, potential_path, df, structure, mode="Cartesian"):
 
       elements  = df["elements"].tolist()
       positions = df["positions"].tolist()
@@ -145,15 +145,12 @@ class io:
       
       kpoints         = structure.kpoints
       lattice_vectors = structure.lattice_vectors
+      species         = structure.species
 
       self.write_INCAR(species, magmoms, B_CONSTRs)
       self.write_KPOINTS(kpoints)
       self.write_POTCAR(species, potential_path)
       self.write_POSCAR(lattice_vectors, positions, elements, species, mode)
-      return
-
-   def set_job_script(self, executable):
-      self.write_job(executable)
       return
 
    ###############

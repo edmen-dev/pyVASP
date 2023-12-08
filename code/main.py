@@ -169,12 +169,32 @@ class VASP_job:
       # prepare structure and magnetism
       self.df = structure_ase
 
-      # write files
-      species = self.structure.species            
-      self.io.write_inputs(self.potential_path, self.df, self.structure, species, mode)
+      # write files       
+      self.io.write_inputs(self.potential_path, self.df, self.structure, mode)
       
       if not self.pyscript:
          self.io.write_job(self.executable)
+
+      return
+
+   def restart_from_charge(self, cwd_new=False, kpoints=False, LAMBDA=False):
+
+      if cwd_new is not False:         
+         if not os.path.exists(cwd_new):
+            run("mkdir " + cwd_new, shell=True)
+         run("cp CHGCAR CHG WAVECAR "+cwd_new)
+         self.io.cwd = cwd_new
+         os.chdir(cwd_new)
+
+      self.io.INCAR.ISTART = "1"
+      self.io.INCAR.ICHARG = "1"
+
+      if kpoints is not False:
+         self.structure.kpoints = kpoints
+      if LAMBDA is not False:
+         self.io.INCAR_constr.LAMBDA = str(LAMBDA)
+
+      self.io.write_inputs(self.potential_path, self.df, self.structure)
 
       return
 
