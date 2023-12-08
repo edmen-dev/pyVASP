@@ -122,7 +122,7 @@ class VASP_job:
    # functionalities
    def run_vasp(self):
       os.chdir(self.io.cwd)
-      run(self.io.command+" "+self.executable+" > "+self.out_file, shell=True)
+      run(self.io.command+" "+self.executable+" > "+self.io.out_file, shell=True)
       return
    
    def submit_job(self):      
