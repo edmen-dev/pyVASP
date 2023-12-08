@@ -130,12 +130,12 @@ class VASP_job:
       run("sbatch "+self.io.job_file, shell=True)
       return
 
-   def prepare_bfields(self, I_CONSTRAINED="4", LAMBDA="1",
+   def prepare_bfields(self, I_CONSTRAINED_M="4", LAMBDA="1",
                        B_MIX="1.0", B_ref="0.02", N_MIX="1.0", E_PENALTY_MAX="3.8", LAMBDA_FIELD_MAX="1e-3"):
       self.io.bfields = True
 
-      self.io.INCAR_constr.I_CONSTRAINED = I_CONSTRAINED
-      self.io.INCAR_constr.LAMBDA        = LAMBDA
+      self.io.INCAR_constr.I_CONSTRAINED_M = I_CONSTRAINED_M
+      self.io.INCAR_constr.LAMBDA          = LAMBDA
 
       self.io.INCAR_constr_flag5.B_MIX            = B_MIX
       self.io.INCAR_constr_flag5.B_ref            = B_ref

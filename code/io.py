@@ -189,7 +189,7 @@ class io:
          string += "\n"
          text_file.write(string)
 
-      if self.INCAR_constr.I_CONSTRAINED == '5':
+      if self.INCAR_constr.I_CONSTRAINED_M == '5':
          for field in fields(self.INCAR_constr_flag5):
             string = field.name + "="
             string += getattr(self.INCAR_constr_flag5, field.name) 
@@ -221,7 +221,7 @@ class io:
             if self.bfields:
                self._M_CONSTR_string += ' '
          
-         if self.bfields == True and self.INCAR_constr.I_CONSTRAINED == '5':
+         if self.bfields == True and self.INCAR_constr.I_CONSTRAINED_M == '5':
             for i, B_CONSTR in enumerate(B_CONSTRs):
                for idir in range(3):
                   self._B_CONSTR_string += ' ' + '{:.7f}'.format(B_CONSTR[idir])
@@ -230,7 +230,7 @@ class io:
          text_file.write(self._MAGMOM_string + '\n')
          if self.bfields:
             text_file.write(self._M_CONSTR_string + '\n')
-            if self.INCAR_constr.I_CONSTRAINED == "5":
+            if self.INCAR_constr.I_CONSTRAINED_M == "5":
                text_file.write(self._B_CONSTR_string + '\n')
       return
 
