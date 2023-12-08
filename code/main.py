@@ -47,23 +47,16 @@ class VASP_job:
       self.pyscript   = pyscript
 
       ###############################################################################
-      # Checking executable and potential paths
-      # Fixing "/" in the executable path if necessary
-      executable_path = self.io.add_slash(executable_path)
-      potential_path  = self.io.add_slash(potential_path)
+      # Setting executable and potential paths, and checking these exist
       self.executable_path = executable_path
       self.potential_path  = potential_path
       
       # Full executable path
-      self.executable_name = executable_name
-      self.executable = self.executable_path + self.executable_name
-         
-      assert os.path.exists(self.executable)     is True, "\nYour executable does not exist!\nYour executable is:\n"+self.executable
-      assert os.path.exists(self.potential_path) is True, "\nYour potential path does not exist!\nYour potential path is:\n"+self.potential_path
+      self.executable = executable_name
       
       ###############################################################################
       if self.verbose == "high":
-         self.io.write_initialization_info(self.executable)
+         self.io.write_initialization_info(self.executable, self.potential_path)
 
       return
    
@@ -75,6 +68,34 @@ class VASP_job:
 
    ###############################################################################
    # properties
+   @property
+   def executable_path(self):
+      return self._executable_path
+   @executable_path.setter
+   def executable_path(self, new_val):
+      # Fixing "/" in the executable path if necessary
+      new_val = self.io.add_slash(new_val)
+      self._executable_path = new_val
+      
+   @property
+   def potential_path(self):
+      return self._potential_path
+   @potential_path.setter
+   def potential_path(self, new_val):
+      # Fixing "/" in the executable path if necessary
+      new_val = self.io.add_slash(new_val)
+      self._potential_path = new_val
+      assert os.path.exists(self._potential_path) is True, "\nYour potential path does not exist!\nYour potential path is:\n"+self.potential_path
+      
+   @property
+   def executable(self):
+      return self._executable
+   @executable.setter
+   def executable(self, new_val):
+      self.executable_name = new_val
+      self._executable = self.executable_path + new_val
+      assert os.path.exists(self._executable) is True, "\nYour executable does not exist!\nYour executable is:\n"+self.executable
+      
    @property
    def df(self):
       return self._df

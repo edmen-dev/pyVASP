@@ -50,9 +50,12 @@ class io:
    ###############################################################################
    # Auxiliary definitions
    
-   def write_initialization_info(self, executable):
+   def write_initialization_info(self, executable, potential_path):
       print("\nYour executable is:")
       print("   "+executable)
+      
+      print("\nYour potential path is:")
+      print("   "+potential_path)
       
       print("\nYour current working directory (cwd) is:")
       print("   "+self.cwd)
