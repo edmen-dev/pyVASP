@@ -191,6 +191,7 @@ class VASP_job:
       self.df = structure_ase
 
       # write files       
+      os.chdir(self.io.cwd)
       self.io.write_inputs(self.potential_path, self.df, self.structure, mode)
       
       if not self.pyscript:
@@ -203,7 +204,7 @@ class VASP_job:
       if cwd_new is not False:         
          if not os.path.exists(cwd_new):
             run("mkdir " + cwd_new, shell=True)
-         run("cp CHGCAR CHG WAVECAR "+cwd_new)
+         run("cp CHGCAR CHG WAVECAR "+cwd_new, shell=True)
          self.io.cwd = cwd_new
          os.chdir(cwd_new)
 
@@ -215,6 +216,8 @@ class VASP_job:
       if LAMBDA is not False:
          self.io.INCAR_constr.LAMBDA = str(LAMBDA)
 
+      # write files 
+      os.chdir(self.io.cwd)
       self.io.write_inputs(self.potential_path, self.df, self.structure)
 
       return
