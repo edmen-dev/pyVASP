@@ -2,11 +2,11 @@ import numpy as np
 import os
 import pandas as pd
 from subprocess import run
-from VASP_job.code.io import io
-from VASP_job.code.structure import structure
-from VASP_job.code.magnetism import magnetism
+from pyVASP.code.io import io
+from pyVASP.code.structure import structure
+from pyVASP.code.magnetism import magnetism
 
-class VASP_job:
+class pyVASP:
    """
    Main functionality of the module.
    """

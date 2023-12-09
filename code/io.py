@@ -1,6 +1,6 @@
 from dataclasses import dataclass, fields
-from VASP_job.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation
-from VASP_job.code.dataclass_inputs import job_parameters, RWIGS, potential_files
+from pyVASP.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation
+from pyVASP.code.dataclass_inputs import job_parameters, RWIGS, potential_files
 
 class io:
    """
@@ -240,7 +240,7 @@ class io:
    # KPOINTS file
    def write_KPOINTS(self, kpoints):
       with open(self.KPOINTS_file, "w") as text_file:
-         text_file.write('KPOINTS created by VASP_job python class\n')
+         text_file.write('KPOINTS created by pyVASP python class\n')
          text_file.write('0\n')
          text_file.write('Monkhorst_Pack\n')
          text_file.write(kpoints + '\n')
@@ -263,7 +263,7 @@ class io:
    # POSCAR file
    def write_POSCAR(self, lattice_vectors, positions, elements, species, mode="Cartesian"):
       with open(self.POSCAR_file, 'w') as text_file:
-         text_file.write("Poscar file generated with python code VASP_job")
+         text_file.write("Poscar file generated with python code pyVASP")
          text_file.write("\n1.0")
          text_file.write("\n")
          for lattice_vector in lattice_vectors:
