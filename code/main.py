@@ -22,6 +22,7 @@ class VASP_job:
             ntasks_per_node = 40,
             command         = "srun",
             pyscript        = False,
+            seed_mag        = "random",
             verbose         = 'normal'):
 
       ###############################################################################
@@ -37,7 +38,7 @@ class VASP_job:
       # Initialising external classes
       self.io        = io(os.getcwd(), job_script_name, out_file, bfields, relaxation, self.verbose)
       self.structure = structure(self.verbose)
-      self.magnetism = magnetism(verbose = self.verbose)
+      self.magnetism = magnetism(seed = seed_mag, verbose = self.verbose)
       
       # set ntasks per node
       self.ntasks_per_node = ntasks_per_node
@@ -56,7 +57,7 @@ class VASP_job:
       
       ###############################################################################
       if self.verbose == "high":
-         self.io.write_initialization_info(self.executable, self.potential_path)
+         self.io.write_initialization_info(self.executable, self.potential_path, seed_mag)
 
       return
    
@@ -176,7 +177,7 @@ class VASP_job:
       self.io.INCAR.ISYM              = ISYM
       return
 
-   def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None):
+   def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None, chdir=False):
       # set ntasks, if given
       if ntasks != None:
          self.set_ntasks(ntasks)
@@ -190,8 +191,9 @@ class VASP_job:
       # prepare structure and magnetism
       self.df = structure_ase
 
-      # write files       
-      os.chdir(self.io.cwd)
+      # write files
+      if chdir:
+         os.chdir(self.io.cwd)
       self.io.write_inputs(self.potential_path, self.df, self.structure, mode)
       
       if not self.pyscript:
@@ -199,14 +201,13 @@ class VASP_job:
 
       return
 
-   def restart_from_charge(self, cwd_new=False, kpoints=False, LAMBDA=False):
+   def restart_from_charge(self, cwd_new=False, kpoints=False, LAMBDA=False, chdir=False):
 
       if cwd_new is not False:         
          if not os.path.exists(cwd_new):
             run("mkdir " + cwd_new, shell=True)
          run("cp CHGCAR CHG WAVECAR "+cwd_new, shell=True)
          self.io.cwd = cwd_new
-         os.chdir(cwd_new)
 
       self.io.INCAR.ISTART = "1"
       self.io.INCAR.ICHARG = "1"
@@ -216,8 +217,9 @@ class VASP_job:
       if LAMBDA is not False:
          self.io.INCAR_constr.LAMBDA = str(LAMBDA)
 
-      # write files 
-      os.chdir(self.io.cwd)
+      # write files
+      if chdir:
+         os.chdir(self.io.cwd)
       self.io.write_inputs(self.potential_path, self.df, self.structure)
 
       return

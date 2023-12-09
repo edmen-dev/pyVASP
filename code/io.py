@@ -49,7 +49,7 @@ class io:
    ###############################################################################
    # Auxiliary definitions
    
-   def write_initialization_info(self, executable, potential_path):
+   def write_initialization_info(self, executable, potential_path, seed_mag):
       print("\nYour executable is:")
       print("   "+executable)
       
@@ -60,8 +60,11 @@ class io:
       print("   "+self.cwd)
       
       print("\nYour bfields and relaxation flags are:")
-      print("   bfields="+str(self.bfields))
-      print("   relaxation="+str(self.relaxation))
+      print("   bfields = "+str(self.bfields))
+      print("   relaxation = "+str(self.relaxation))
+      
+      print("\nYour seed_mag for DLM approach is:")
+      print("   seed_mag = "+str(seed_mag))
       
       print("\nYour default INCAR parameters are:")
       self.write_fields(self.INCAR)
