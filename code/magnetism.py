@@ -10,12 +10,16 @@ class magnetism:
              default_magdir   = np.array([0, 0, 1]),
              default_m        = 1.0, # No DLM is applied
              default_B_CONSTR = np.array([0, 0, 0]),
+             seed             = "random",
              verbose = "low"):
 
       self.default_magdir   = default_magdir
       self.default_m        = default_m
       self.default_B_CONSTR = default_B_CONSTR
       self.verbose = verbose
+
+      # setting rng for random numbers
+      self.rng = seed
      
       return
 
@@ -24,6 +28,23 @@ class magnetism:
 
    ###############################################################################
    # properties
+   @property
+   def seed(self):
+      return self._seed
+   @seed.setter
+   def seed(self, new_val):
+      if new_val == None or new_val == "random":
+         self._seed = np.random.randint(1e6)
+      else:
+         self._seed = new_val
+         
+   @property
+   def rng(self):
+      return self._rng
+   @rng.setter
+   def rng(self, new_val):
+      self.seed = new_val
+      self._rng = np.random.RandomState(self.seed)
 
 
    ###############################################################################
@@ -74,9 +95,9 @@ class magnetism:
          if this_m is False or this_m is None or this_m==1:
             magmoms.append( this_magdir )
          else:
-            random_number = np.random.random()
+            random_number = self.rng.random()
             theta = self.get_theta_mag(random_number, this_betah)
-            phi   = np.random.random() * 2*np.pi
+            phi   = self.rng.random() * 2*np.pi
 
             mod = np.linalg.norm( this_magdir )
             mux = np.sin(theta) * np.cos(phi)

@@ -1,4 +1,4 @@
-Poscar file generated with python code VASP_job
+Poscar file generated with python code pyVASP
 1.0
 2.7900000 0.0000000 0.0000000
 0.0000000 2.7900000 0.0000000
@@ -6,5 +6,5 @@ Poscar file generated with python code VASP_job
 Fe 
 2 
 Cartesian
-0.0000000 0.0000000 0.0000000
 1.3950000 1.3950000 1.3950000
+0.0000000 0.0000000 0.0000000

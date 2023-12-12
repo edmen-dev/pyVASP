@@ -2,11 +2,11 @@ import numpy as np
 import os
 import pandas as pd
 from subprocess import run
-from VASP_job.code.io import io
-from VASP_job.code.structure import structure
-from VASP_job.code.magnetism import magnetism
+from pyVASP.code.io import io
+from pyVASP.code.structure import structure
+from pyVASP.code.magnetism import magnetism
 
-class VASP_job:
+class pyVASP:
    """
    Main functionality of the module.
    """
@@ -20,6 +20,9 @@ class VASP_job:
             bfields         = False,
             relaxation      = False,
             ntasks_per_node = 40,
+            command         = "srun",
+            pyscript        = False,
+            seed_mag        = "random",
             verbose         = 'normal'):
 
       ###############################################################################
@@ -35,30 +38,26 @@ class VASP_job:
       # Initialising external classes
       self.io        = io(os.getcwd(), job_script_name, out_file, bfields, relaxation, self.verbose)
       self.structure = structure(self.verbose)
-      self.magnetism = magnetism(verbose = self.verbose)
+      self.magnetism = magnetism(seed = seed_mag, verbose = self.verbose)
       
       # set ntasks per node
       self.ntasks_per_node = ntasks_per_node
       self.io.job_parameters.ntasks = str(self.ntasks_per_node)
+      # set command
+      self.io.command = command
+      self.pyscript   = pyscript
 
       ###############################################################################
-      # Checking executable and potential paths
-      # Fixing "/" in the executable path if necessary
-      executable_path = self.io.add_slash(executable_path)
-      potential_path  = self.io.add_slash(potential_path)
+      # Setting executable and potential paths, and checking these exist
       self.executable_path = executable_path
       self.potential_path  = potential_path
       
       # Full executable path
-      self.executable_name = executable_name
-      self.executable = self.executable_path + self.executable_name
-         
-      assert os.path.exists(self.executable)     is True, "\nYour executable does not exist!\nYour executable is:\n"+self.executable
-      assert os.path.exists(self.potential_path) is True, "\nYour potential path does not exist!\nYour potential path is:\n"+self.potential_path
+      self.executable = executable_name
       
       ###############################################################################
       if self.verbose == "high":
-         self.io.write_initialization_info(self.executable)
+         self.io.write_initialization_info(self.executable, self.potential_path, seed_mag)
 
       return
    
@@ -70,6 +69,34 @@ class VASP_job:
 
    ###############################################################################
    # properties
+   @property
+   def executable_path(self):
+      return self._executable_path
+   @executable_path.setter
+   def executable_path(self, new_val):
+      # Fixing "/" in the executable path if necessary
+      new_val = self.io.add_slash(new_val)
+      self._executable_path = new_val
+      
+   @property
+   def potential_path(self):
+      return self._potential_path
+   @potential_path.setter
+   def potential_path(self, new_val):
+      # Fixing "/" in the executable path if necessary
+      new_val = self.io.add_slash(new_val)
+      self._potential_path = new_val
+      assert os.path.exists(self._potential_path) is True, "\nYour potential path does not exist!\nYour potential path is:\n"+self.potential_path
+      
+   @property
+   def executable(self):
+      return self._executable
+   @executable.setter
+   def executable(self, new_val):
+      self.executable_name = new_val
+      self._executable = self.executable_path + new_val
+      assert os.path.exists(self._executable) is True, "\nYour executable does not exist!\nYour executable is:\n"+self.executable
+      
    @property
    def df(self):
       return self._df
@@ -91,15 +118,15 @@ class VASP_job:
 
       self._df = pd.DataFrame({
       "elements"  : structure_ase.get_chemical_symbols(),
-      "positions" : list( structure_ase.positions ),
-      "magdirs"   : list( structure_ase.arrays["magdirs"] ),
+      "positions" : [tuple(sublist) for sublist in list( structure_ase.positions )],
+      "magdirs"   : [tuple(sublist) for sublist in list( structure_ase.arrays["magdirs"] )],
       "ms"        : list( structure_ase.arrays["ms"] ),
       "betahs"    : list( structure_ase.arrays["betahs"] ),
-      "magmoms"   : list( structure_ase.arrays["magmoms"] ),
-      "B_CONSTRs" : list( structure_ase.arrays["B_CONSTRs"] )
+      "magmoms"   : [tuple(sublist) for sublist in list( structure_ase.arrays["magmoms"] )],
+      "B_CONSTRs" : [tuple(sublist) for sublist in list( structure_ase.arrays["B_CONSTRs"] )]
       })
       # sort values to satisfy vasp
-      self._df = self._df.sort_values("elements")
+      self._df = self._df.sort_values(["elements", "magdirs", "positions"])
 
       self.io.structure_ase = structure_ase
 
@@ -117,15 +144,20 @@ class VASP_job:
    # functionalities
    def run_vasp(self):
       os.chdir(self.io.cwd)
+      run(self.io.command+" "+self.executable+" > "+self.io.out_file, shell=True)
+      return
+   
+   def submit_job(self):      
+      os.chdir(self.io.cwd)
       run("sbatch "+self.io.job_file, shell=True)
       return
 
-   def prepare_bfields(self, I_CONSTRAINED="4", LAMBDA="1",
+   def prepare_bfields(self, I_CONSTRAINED_M="4", LAMBDA="1",
                        B_MIX="1.0", B_ref="0.02", N_MIX="1.0", E_PENALTY_MAX="3.8", LAMBDA_FIELD_MAX="1e-3"):
       self.io.bfields = True
 
-      self.io.INCAR_constr.I_CONSTRAINED = I_CONSTRAINED
-      self.io.INCAR_constr.LAMBDA        = LAMBDA
+      self.io.INCAR_constr.I_CONSTRAINED_M = I_CONSTRAINED_M
+      self.io.INCAR_constr.LAMBDA          = LAMBDA
 
       self.io.INCAR_constr_flag5.B_MIX            = B_MIX
       self.io.INCAR_constr_flag5.B_ref            = B_ref
@@ -145,7 +177,7 @@ class VASP_job:
       self.io.INCAR.ISYM              = ISYM
       return
 
-   def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None):
+   def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None, chdir=False):
       # set ntasks, if given
       if ntasks != None:
          self.set_ntasks(ntasks)
@@ -160,9 +192,35 @@ class VASP_job:
       self.df = structure_ase
 
       # write files
-      species = self.structure.species
-      self.io.write_inputs_and_job(self.executable, self.potential_path,
-                                   self.df, self.structure, species, mode)
+      if chdir:
+         os.chdir(self.io.cwd)
+      self.io.write_inputs(self.potential_path, self.df, self.structure, mode)
+      
+      if not self.pyscript:
+         self.io.write_job(self.executable)
+
+      return
+
+   def restart_from_charge(self, cwd_new=False, kpoints=False, LAMBDA=False, chdir=False):
+
+      if cwd_new is not False:         
+         if not os.path.exists(cwd_new):
+            run("mkdir " + cwd_new, shell=True)
+         run("cp CHGCAR CHG WAVECAR "+cwd_new, shell=True)
+         self.io.cwd = cwd_new
+
+      self.io.INCAR.ISTART = "1"
+      self.io.INCAR.ICHARG = "1"
+
+      if kpoints is not False:
+         self.structure.kpoints = kpoints
+      if LAMBDA is not False:
+         self.io.INCAR_constr.LAMBDA = str(LAMBDA)
+
+      # write files
+      if chdir:
+         os.chdir(self.io.cwd)
+      self.io.write_inputs(self.potential_path, self.df, self.structure)
 
       return
 

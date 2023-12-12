@@ -18,10 +18,10 @@ class INCAR:
     LCHARG:        str = '.TRUE.'
     LORBIT:        str = '11'
     ISMEAR:        str = '1'
-    SIGMA:         str = '0.005'
+    SIGMA:         str = '0.03'
     ISPIN:         str = '2'
     ENCUT:         str = '500'
-    EDIFF:         str = '1e-6'
+    EDIFF:         str = '1e-5'
     NELM:          str = '200'
     LMAXMIX:       str = '6'
     LNONCOLLINEAR: str = '.TRUE.'
@@ -31,8 +31,8 @@ class INCAR:
 # INCAR_constr parameters
 @dataclass(frozen=False)
 class INCAR_constr:
-    I_CONSTRAINED: str = '4'
-    LAMBDA:        str = '1'
+    I_CONSTRAINED_M: str = '4'
+    LAMBDA:          str = '1'
 
 # INCAR_constr_flag5 parameters
 @dataclass(frozen=False)

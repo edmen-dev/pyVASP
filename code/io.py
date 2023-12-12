@@ -1,6 +1,6 @@
 from dataclasses import dataclass, fields
-from VASP_job.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation
-from VASP_job.code.dataclass_inputs import job_parameters, RWIGS, potential_files
+from pyVASP.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation
+from pyVASP.code.dataclass_inputs import job_parameters, RWIGS, potential_files
 
 class io:
    """
@@ -28,7 +28,6 @@ class io:
          
       ###############################################################################
       # Set working directory and files
-      cwd = self.add_slash(cwd)
       self.cwd = cwd
          
       ###############################################################################
@@ -50,16 +49,22 @@ class io:
    ###############################################################################
    # Auxiliary definitions
    
-   def write_initialization_info(self, executable):
+   def write_initialization_info(self, executable, potential_path, seed_mag):
       print("\nYour executable is:")
       print("   "+executable)
+      
+      print("\nYour potential path is:")
+      print("   "+potential_path)
       
       print("\nYour current working directory (cwd) is:")
       print("   "+self.cwd)
       
       print("\nYour bfields and relaxation flags are:")
-      print("   bfields="+str(self.bfields))
-      print("   relaxation="+str(self.relaxation))
+      print("   bfields = "+str(self.bfields))
+      print("   relaxation = "+str(self.relaxation))
+      
+      print("\nYour seed_mag for DLM approach is:")
+      print("   seed_mag = "+str(seed_mag))
       
       print("\nYour default INCAR parameters are:")
       self.write_fields(self.INCAR)
@@ -136,8 +141,7 @@ class io:
    ###############################################################################
    # functionalities
 
-   def write_inputs_and_job(self, executable, potential_path,
-                            df, structure, species, mode):
+   def write_inputs(self, potential_path, df, structure, mode="Cartesian"):
 
       elements  = df["elements"].tolist()
       positions = df["positions"].tolist()
@@ -146,12 +150,12 @@ class io:
       
       kpoints         = structure.kpoints
       lattice_vectors = structure.lattice_vectors
+      species         = structure.species
 
       self.write_INCAR(species, magmoms, B_CONSTRs)
       self.write_KPOINTS(kpoints)
       self.write_POTCAR(species, potential_path)
       self.write_POSCAR(lattice_vectors, positions, elements, species, mode)
-      self.write_job(executable)
       return
 
    ###############
@@ -187,7 +191,7 @@ class io:
          string += "\n"
          text_file.write(string)
 
-      if self.INCAR_constr.I_CONSTRAINED == '5':
+      if self.INCAR_constr.I_CONSTRAINED_M == '5':
          for field in fields(self.INCAR_constr_flag5):
             string = field.name + "="
             string += getattr(self.INCAR_constr_flag5, field.name) 
@@ -219,7 +223,7 @@ class io:
             if self.bfields:
                self._M_CONSTR_string += ' '
          
-         if self.bfields == True and self.INCAR_constr.I_CONSTRAINED == '5':
+         if self.bfields == True and self.INCAR_constr.I_CONSTRAINED_M == '5':
             for i, B_CONSTR in enumerate(B_CONSTRs):
                for idir in range(3):
                   self._B_CONSTR_string += ' ' + '{:.7f}'.format(B_CONSTR[idir])
@@ -228,7 +232,7 @@ class io:
          text_file.write(self._MAGMOM_string + '\n')
          if self.bfields:
             text_file.write(self._M_CONSTR_string + '\n')
-            if self.INCAR_constr.I_CONSTRAINED == "5":
+            if self.INCAR_constr.I_CONSTRAINED_M == "5":
                text_file.write(self._B_CONSTR_string + '\n')
       return
 
@@ -236,7 +240,7 @@ class io:
    # KPOINTS file
    def write_KPOINTS(self, kpoints):
       with open(self.KPOINTS_file, "w") as text_file:
-         text_file.write('KPOINTS created by VASP_job python class\n')
+         text_file.write('KPOINTS created by pyVASP python class\n')
          text_file.write('0\n')
          text_file.write('Monkhorst_Pack\n')
          text_file.write(kpoints + '\n')
@@ -259,7 +263,7 @@ class io:
    # POSCAR file
    def write_POSCAR(self, lattice_vectors, positions, elements, species, mode="Cartesian"):
       with open(self.POSCAR_file, 'w') as text_file:
-         text_file.write("Poscar file generated with python code VASP_job")
+         text_file.write("Poscar file generated with python code pyVASP")
          text_file.write("\n1.0")
          text_file.write("\n")
          for lattice_vector in lattice_vectors:
@@ -293,7 +297,7 @@ class io:
             string += getattr(self.job_parameters, field.name)
             text_file.write(string)
          text_file.write("\n\nstart_time=$(date +%s)  # Record the start time")
-         text_file.write("\n\nsrun "+executable+" > "+self.out_file)
+         text_file.write("\n\n"+self.command+" "+executable+" > "+self.out_file)
          text_file.write("\n\nend_time=$(date +%s)  # Record the end time")
          text_file.write("\nduration=$((end_time - start_time))  # Calculate the duration in seconds")
          text_file.write("\n\n# Print the duration")

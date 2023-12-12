@@ -12,7 +12,7 @@
 
 start_time=$(date +%s)  # Record the start time
 
-srun /home/emendive/workbench/work/from_claix/codes/VASP/vasp.5.4.4-flag4/bin/vasp_ncl > /home/emendive/workbench/devel/gitclones/VASP_job/notebooks/examples/bccFe_FM_supercell/FM_2x1x1/out
+srun /home/emendive/workbench/work/from_claix/codes/VASP/vasp.5.4.4-flag4/bin/vasp_ncl > /home/emendive/workbench/devel/gitclones/pyVASP/notebooks/examples/bccFe_FM_supercell/FM_2x1x1/out
 
 end_time=$(date +%s)  # Record the end time
 duration=$((end_time - start_time))  # Calculate the duration in seconds
