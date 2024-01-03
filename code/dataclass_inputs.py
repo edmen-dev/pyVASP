@@ -60,8 +60,10 @@ class RWIGS:
     N:  str = '0.979'
     Mn: str = '1.323'
     Fe: str = '1.164'
+    Co: str = '1.302'
     Ni: str = '1.058'
     Ga: str = '1.217'
+    Gd: str = '1.482'
     
 # potential_files
 @dataclass(frozen=False)
@@ -69,8 +71,10 @@ class potential_files:
     N:  str = 'N'
     Mn: str = 'Mn_pv'
     Fe: str = 'Fe_pv'
+    Co: str = 'Co_pv'
     Ni: str = 'Ni_pv'
     Ga: str = 'Ga_d'
+    Gd: str = 'Gd'
 
 
 ###############################################################################
