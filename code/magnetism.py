@@ -11,11 +11,13 @@ class magnetism:
              default_m        = 1.0, # No DLM is applied
              default_B_CONSTR = np.array([0, 0, 0]),
              seed             = "random",
+             DLM_type         = "Heisenberg",
              verbose = "low"):
 
       self.default_magdir   = default_magdir
       self.default_m        = default_m
       self.default_B_CONSTR = default_B_CONSTR
+      self.DLM_type = DLM_type
       self.verbose = verbose
 
       # setting rng for random numbers
@@ -79,7 +81,10 @@ class magnetism:
          if ms[i] == 1 or ms[i] is False or ms[i] is None:
             betahs.append( np.inf )
          else:
-            betahs.append( self.get_betah_from_m( ms[i] ) )
+            if self.DLM_type=="Heisenberg":
+               betahs.append( self.get_betah_from_m( ms[i] ) )
+            elif self.DLM_type=="Ising":
+               betahs.append( np.arctanh(ms[i]) )
 
       structure_ase.new_array("betahs", betahs, dtype=float)
       
@@ -94,7 +99,8 @@ class magnetism:
 
          if this_m is False or this_m is None or this_m==1:
             magmoms.append( this_magdir )
-         else:
+
+         elif self.DLM_type=="Heisenberg":
             random_number = self.rng.random()
             theta = self.get_theta_mag(random_number, this_betah)
             phi   = self.rng.random() * 2*np.pi
@@ -109,6 +115,14 @@ class magnetism:
             mu = self.rotate_magmom(mu, this_magdir)
 
             magmoms.append( mu )
+
+         elif self.DLM_type=="Ising":
+            random_number = self.rng.random()
+            conc_up = 0.5*(this_m + 1)
+            if random_number < conc_up:
+               magmoms.append( this_magdir )
+            else:
+               magmoms.append( -this_magdir )
 
       structure_ase.new_array("magmoms", magmoms, dtype=float)
 

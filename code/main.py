@@ -23,6 +23,7 @@ class pyVASP:
             command         = "srun",
             pyscript        = False,
             seed_mag        = "random",
+            DLM_type        = "Heisenberg",
             verbose         = 'normal'):
 
       ###############################################################################
@@ -38,7 +39,7 @@ class pyVASP:
       # Initialising external classes
       self.io        = io(os.getcwd(), job_script_name, out_file, bfields, relaxation, self.verbose)
       self.structure = structure(self.verbose)
-      self.magnetism = magnetism(seed = seed_mag, verbose = self.verbose)
+      self.magnetism = magnetism(seed = seed_mag, verbose = self.verbose, DLM_type = DLM_type)
       
       # set ntasks per node
       self.ntasks_per_node = ntasks_per_node
