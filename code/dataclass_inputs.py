@@ -85,9 +85,8 @@ class potential_files:
 class job_parameters:
     job_name:     str = 'job'
     partition:    str = 'p.cmfe'
-    nodes:        str = '1'
+#    nodes:        str = '1 # not used for mpie
     ntasks:       str = '40'
-    constraint:   str = '\'[swi1|swi2|swi3|swi4|swi5|swi6|swi7|swe1|swe2|swe3|swe4|swe5|swe6|swe7]\''
     time:         str = '180'
     mem_per_cpu:  str = '3GB'
     output:       str = 'mpi-out.%j'
