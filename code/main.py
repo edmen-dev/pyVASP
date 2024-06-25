@@ -194,8 +194,8 @@ class pyVASP:
    def prepare_VDW(self, IVDW="20", LVDW_EWALD=".TRUE."):
       self.io.VDW = True
 
-      self.io.INCAR_U.IVDW       = IVDW
-      self.io.INCAR_U.LVDW_EWALD = LVDW_EWALD
+      self.io.INCAR_VDW.IVDW       = IVDW
+      self.io.INCAR_VDW.LVDW_EWALD = LVDW_EWALD
       return
 
    def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None, chdir=False):
