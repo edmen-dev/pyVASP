@@ -63,7 +63,7 @@ class INCAR_U:
 
 # INCAR_VDW parameters
 @dataclass(frozen=False)
-class INCAR_U:
+class INCAR_VDW:
     IVDW:       str = "20"
     LVDW_EWALD: str = ".TRUE."
 
