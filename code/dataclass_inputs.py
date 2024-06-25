@@ -64,6 +64,10 @@ class RWIGS:
     Ni: str = '1.058'
     Ga: str = '1.217'
     Gd: str = '1.482'
+    Cr: str = '1.323'
+    Ge: str = '1.217'
+    Te: str = '1.535'
+
     
 # potential_files
 @dataclass(frozen=False)
@@ -75,6 +79,9 @@ class potential_files:
     Ni: str = 'Ni_pv'
     Ga: str = 'Ga_d'
     Gd: str = 'Gd'
+    Cr: str = 'Cr_pv'
+    Ge: str = 'Ge_d'
+    Te: str = 'Te'
 
 
 ###############################################################################
