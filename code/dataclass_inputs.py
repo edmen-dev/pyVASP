@@ -51,6 +51,16 @@ class INCAR_relaxation:
     NSW:    str = '100'
     EDIFFG: str = '-0.01'
 
+# INCAR_U parameters
+@dataclass(frozen=False)
+class INCAR_U:
+    LDAU:      str = '.TRUE.'
+    LDAUTYPE:  str = "2"
+    LDAUL:     str = "-1 2"
+    LDAUU:     str = "5.00 0.00"
+    LDAUJ:     str = "0.00 0.00"
+    LDAUPRINT: str = "1"
+
 ###############################################################################
 # Structure-related
 

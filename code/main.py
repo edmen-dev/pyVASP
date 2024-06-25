@@ -177,6 +177,17 @@ class pyVASP:
       self.io.INCAR_relaxation.EDIFFG = EDIFFG
       self.io.INCAR.ISYM              = ISYM
       return
+      
+   def prepare_U(self, LDAU=".TRUE.", LDAUTYPE="2", LDAUL="-1 2", LDAUU="5.00 0.00", LDAUJ="0.00 0.00", LDAUPRINT="1"):
+      self.io.U = True
+
+      self.io.INCAR_U.LDAU      = LDAU
+      self.io.INCAR_U.LDAUTYPE  = LDAUTYPE
+      self.io.INCAR_U.LDAUL     = LDAUL
+      self.io.INCAR_U.LDAUU     = LDAUU
+      self.io.INCAR_U.LDAUJ     = LDAUJ
+      self.io.INCAR_U.LDAUPRINT = LDAUPRINT
+      return
 
    def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None, chdir=False):
       # set ntasks, if given

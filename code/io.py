@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields
-from pyVASP.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation
+from pyVASP.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation, INCAR_U
 from pyVASP.code.dataclass_inputs import job_parameters, RWIGS, potential_files
 
 class io:
@@ -36,6 +36,7 @@ class io:
       self.INCAR_constr        = INCAR_constr()
       self.INCAR_constr_flag5  = INCAR_constr_flag5()
       self.INCAR_relaxation    = INCAR_relaxation()
+      self.INCAR_U             = INCAR_U()
       self.job_parameters      = job_parameters()
       self.RWIGS               = RWIGS()
       self.potential_files     = potential_files()
@@ -75,6 +76,9 @@ class io:
          
       print("\nYour default INCAR parameters for relaxation are:")
       self.write_fields(self.INCAR_relaxation)
+         
+      print("\nYour default INCAR parameters for +U are:")
+      self.write_fields(self.INCAR_U)
       
       print("\nYour default RWIGS parameters are:")
       self.write_fields(self.RWIGS)
@@ -184,6 +188,14 @@ class io:
          text_file.write(string)
       return
 
+   def add_U_parameters(self, text_file):
+      for field in fields(self.INCAR_U):
+         string = field.name + "="
+         string += getattr(self.INCAR_U, field.name) 
+         string += "\n"
+         text_file.write(string)
+      return
+
    def add_constr_INCAR_parameters(self, text_file):
       for field in fields(self.INCAR_constr):
          string = field.name + "="
@@ -207,6 +219,10 @@ class io:
          # Relaxation:
          if self.relaxation:
             self.add_relaxation_parameters(text_file)
+
+         # +U:
+         if self.U:
+            self.add_U_parameters(text_file)
 
          # Magnetism:
          if self.bfields:
