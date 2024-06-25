@@ -19,6 +19,8 @@ class pyVASP:
             out_file        = 'out',
             bfields         = False,
             relaxation      = False,
+            U               = False,
+            VDW             = False,
             ntasks_per_node = 40,
             command         = "srun",
             pyscript        = False,
@@ -37,7 +39,7 @@ class pyVASP:
       
       ###############################################################################
       # Initialising external classes
-      self.io        = io(os.getcwd(), job_script_name, out_file, bfields, relaxation, self.verbose)
+      self.io        = io(os.getcwd(), job_script_name, out_file, bfields, relaxation, U, VDW, self.verbose)
       self.structure = structure(self.verbose)
       self.magnetism = magnetism(seed = seed_mag, verbose = self.verbose, DLM_type = DLM_type)
       
@@ -187,6 +189,13 @@ class pyVASP:
       self.io.INCAR_U.LDAUU     = LDAUU
       self.io.INCAR_U.LDAUJ     = LDAUJ
       self.io.INCAR_U.LDAUPRINT = LDAUPRINT
+      return
+      
+   def prepare_VDW(self, IVDW="20", LVDW_EWALD=".TRUE."):
+      self.io.VDW = True
+
+      self.io.INCAR_U.IVDW       = IVDW
+      self.io.INCAR_U.LVDW_EWALD = LVDW_EWALD
       return
 
    def set_calculation(self, structure_ase, mode="Cartesian", ntasks=None, time=None, chdir=False):

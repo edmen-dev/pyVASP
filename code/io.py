@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields
-from pyVASP.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation, INCAR_U
+from pyVASP.code.dataclass_inputs import INCAR, INCAR_constr, INCAR_constr_flag5, INCAR_relaxation, INCAR_U, INCAR_VDW
 from pyVASP.code.dataclass_inputs import job_parameters, RWIGS, potential_files
 
 class io:
@@ -13,6 +13,8 @@ class io:
              out_file_name    = 'out',
              bfields          = False,
              relaxation       = False,
+             U                = False,
+             VDW              = False,
              verbose          = 'normal'):
 
       """
@@ -24,6 +26,8 @@ class io:
       self.out_file_name   = out_file_name
       self.bfields         = bfields
       self.relaxation      = relaxation
+      self.U               = U
+      self.VDW             = VDW
       self.initialise_magnetic_strings()
          
       ###############################################################################
@@ -37,6 +41,7 @@ class io:
       self.INCAR_constr_flag5  = INCAR_constr_flag5()
       self.INCAR_relaxation    = INCAR_relaxation()
       self.INCAR_U             = INCAR_U()
+      self.INCAR_VDW           = INCAR_VDW()
       self.job_parameters      = job_parameters()
       self.RWIGS               = RWIGS()
       self.potential_files     = potential_files()
@@ -79,6 +84,9 @@ class io:
          
       print("\nYour default INCAR parameters for +U are:")
       self.write_fields(self.INCAR_U)
+         
+      print("\nYour default INCAR parameters for vdw interaction corrections are:")
+      self.write_fields(self.INCAR_VDW)
       
       print("\nYour default RWIGS parameters are:")
       self.write_fields(self.RWIGS)
@@ -196,6 +204,14 @@ class io:
          text_file.write(string)
       return
 
+   def add_VDW_parameters(self, text_file):
+      for field in fields(self.INCAR_VDW):
+         string = field.name + "="
+         string += getattr(self.INCAR_VDW, field.name) 
+         string += "\n"
+         text_file.write(string)
+      return
+
    def add_constr_INCAR_parameters(self, text_file):
       for field in fields(self.INCAR_constr):
          string = field.name + "="
@@ -223,6 +239,10 @@ class io:
          # +U:
          if self.U:
             self.add_U_parameters(text_file)
+
+         # VDW:
+         if self.VDW:
+            self.add_VDW_parameters(text_file)
 
          # Magnetism:
          if self.bfields:

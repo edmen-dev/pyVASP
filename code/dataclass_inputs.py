@@ -61,6 +61,12 @@ class INCAR_U:
     LDAUJ:     str = "0.00 0.00"
     LDAUPRINT: str = "1"
 
+# INCAR_VDW parameters
+@dataclass(frozen=False)
+class INCAR_U:
+    IVDW:       str = "20"
+    LVDW_EWALD: str = ".TRUE."
+
 ###############################################################################
 # Structure-related
 
