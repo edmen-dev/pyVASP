@@ -267,7 +267,8 @@ class pyVASP:
       if ntasks%self.ntasks_per_node == 0:
          nodes_job = str(int(ntasks/self.ntasks_per_node))
       else:
-         raise ValueError("ntasks chosen is not a multiple of default ntasks per node")
+         #raise ValueError("ntasks chosen is not a multiple of default ntasks per node")
+         print("ntasks chosen is not a multiple of default ntasks per node")
 
       self.io.job_parameters.ntasks = str(int(ntasks)) # needed for mpie
       self.io.job_parameters.nodes  = nodes_job
