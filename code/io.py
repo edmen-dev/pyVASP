@@ -251,7 +251,13 @@ class io:
          self.initialise_magnetic_strings()
 
          for i, magmom in enumerate(magmoms):
-            for idir in range(3):
+            # if Collinear, then only write component z
+            if self.INCAR.LNONCOLLINEAR == '.TRUE.':
+               idir0 = 0
+            elif self.INCAR.LNONCOLLINEAR == '.FALSE.':
+               idir0 = 2
+
+            for idir in range(idir0, 3):
                self._MAGMOM_string   += ' ' + '{:.7f}'.format(magmom[idir])
                if self.bfields:
                   self._M_CONSTR_string += ' ' + '{:.7f}'.format(magmom[idir])
